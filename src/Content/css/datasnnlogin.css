@@ -1,0 +1,69 @@
+table {
+    /* width: 100%; */
+    border-collapse: separate;
+    border-spacing :  0;
+    font-size: 14px;
+}
+table th:last-child {
+    border-right: 1px solid #3c6690;
+}
+table th{
+    text-align: left;
+    color:white;
+    background: linear-gradient(#829ebc,#225588);
+    border-left: 1px solid #3c6690;
+    border-top: 1px solid #3c6690;
+    border-bottom: 1px solid #3c6690;
+    /* width: 25%; */
+    padding: 5px 10px;
+}
+table td{
+    text-align: left;
+    border-left: 1px solid #a8b7c5;
+    border-bottom: 1px solid #a8b7c5;
+    border-top:none;
+    /* width: 25%; */
+    padding: 5px 10px;
+    /* background-color: #ffffff; */
+  }
+table td:last-child{
+  border-right: 1px solid #a8b7c5;
+}
+#tbl1 {
+    margin-left: 20px;
+    background-color: #ffffff;
+}
+.th-1,.th-2 {
+    width: 30px;
+}
+.th-3 {
+    width: 100px;
+}
+.th-4 {
+    width: 200px;
+}
+.inp-txt {
+    padding: 0;
+    background-color: lemonchiffon;
+}
+.login-txt {
+    width: 150px;
+    height: 2em;
+    background-color: lemonchiffon;
+}
+#category ul li{
+    display: inline;
+}
+#category ul{
+    margin-left: 0;
+    padding-left: 20px;
+}
+#category li{
+    margin-right: 15px;
+}
+#login-lbl {
+    font-weight: bold;
+}
+#btnarea {
+    margin-left: 200px;
+}

@@ -1,0 +1,48 @@
+﻿@model HACCPExtender.Models.Bussiness.BManager
+
+@Styles.Render("~/Content/css/style.css")
+@Styles.Render("~/Content/css/managerlogin.css")
+@Scripts.Render("~/Scripts/js/common.js")
+
+<script type="text/javascript">
+    $(function () {
+
+    })
+    function login() {
+        $('form').attr('action', '@Url.Content("~/Manager/Signin")');
+        $('form').submit();
+    }
+</script>
+
+<h1 class="page-title">管理者承認</h1>
+@using (Html.BeginForm("signin", "ManagerLogin", new { }, FormMethod.Post, new { }))
+{
+    @Html.AntiForgeryToken()
+    <section id="">
+        @Html.ValidationSummary()
+        <div id="category">
+            <ul>
+                <li><span id="login-lbl">管理作業者　　</span></li>
+                <li>
+                    @Html.DropDownListFor(model => model.WorkerId, (IEnumerable<SelectListItem>)ViewBag.ServerOptions, "選択してください", new { @class = "selectType1 input-area1" })
+                </li>
+            </ul>
+        </div>
+        <div id="category">
+            <ul>
+                <li><span id="login-lbl">承認ID　　　　</span></li>
+                <li>@Html.TextBox("loginId", (string)ViewBag.snnId, new { @class = "login-txt input-area2" })</li>
+            </ul>
+        </div>
+        <div id="category">
+            <ul>
+                <li><span id="login-lbl">承認パスワード</span></li>
+                <li>@Html.Password("passWord", string.Empty, new { @class = "login-txt input-area1" })</li>
+            </ul>
+        </div>
+        <section id="btnarea">
+            <button type="button" name="registbtn" value="regist" class="btn-register" onclick="login()" @ViewBag.disabled>ログイン</button>
+        </section>
+    </section>
+}
+

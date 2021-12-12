@@ -1,0 +1,146 @@
+﻿@model List<HACCPExtender.Models.Bussiness.BLocationM>
+
+@Styles.Render("~/Content/css/style.css")
+@Styles.Render("~/Content/css/location.css")
+@Scripts.Render("~/Scripts/js/common.js")
+<script type="text/javascript">
+    $(function () {
+    })
+    function regist() {
+        $("#message-area").css('display', 'none');
+        $(".validation-summary-errors").css('display', 'none');
+        if (!confirm("登録します。よろしいですか？")) {
+            $('form').off('submit');
+            return false;
+        }
+        $('.orderno').each(function (i) {
+            $(this).val(i);
+        });
+        $('form').attr('action', '@Url.Content("~/LocationM/Edit")');
+        $('form').submit();
+    }
+    function regist2() {
+        $("#message-area").css('display', 'none');
+        $(".validation-summary-errors").css('display', 'none');
+        if (!confirm("設問マスタの内容が一致しない場合がございますので、\n設問マスタのご確認をお願いいたします。\n登録します。よろしいですか？")) {
+            $('form').off('submit');
+            return false;
+        }
+        $('.orderno').each(function (i) {
+            $(this).val(i);
+        });
+        $('form').attr('action', '@Url.Content("~/LocationM/Edit")');
+        $('form').submit();
+    }
+    function add() {
+        $('.orderno').each(function (i) {
+            $(this).val(i);
+        });
+        $('form').attr('action', '@Url.Content("~/LocationM/Add")');
+        $('form').submit();
+    }
+    function nextMaster() {
+        if (confirm("次のマスタ登録へ進みます。\n画面の編集中のデータは破棄されますがよろしいですか？")) {
+            $('form').attr('action', '@Url.Content("~/LocationM/InitialSetQuestion")');
+            $('form').submit();
+        }
+    }
+</script>
+
+
+@{
+    if ("3".Equals(Session["DISPMODE"]))
+    {
+        <h1 id="img-title">初期設定</h1>
+        <img src="@Url.Content("~/Content/images/location.png")" id="first-map" />
+        <div><button type="button" name="skipbtn" value="skip" class="btn-skip" onclick="nextMaster()">次のマスタへ進む</button></div>
+    }
+}
+<h1 class="page-title">中分類マスタ</h1>
+@using (Html.BeginForm("Edit", "LocationM", new { }, FormMethod.Post, new { }))
+{
+    @Html.AntiForgeryToken()
+    <section id="">
+        @Html.ValidationSummary()
+        @{
+            var disp = "none";
+            if (!string.IsNullOrEmpty(ViewBag.registMsg))
+            {
+                disp = "block";
+            }
+        }
+        <div id="message-area" style="display: @disp">
+            <div class="regist-message" style="display: @disp">@ViewBag.registMsg</div>
+        </div>
+        <dev id="sortbtn-area">
+            <input type="button" id="" class="sotrbtn" value="▲" onclick="sortUp()">
+            <input type="button" id="" class="sotrbtn" value="▼" onclick="sortDown()">
+            <span class="">表示順序変更</span>
+        </dev>
+
+        <table id="tbl1" class="header_title">
+            <thead>
+                <tr class="datarow">
+                    <th class="th-1">No</th>
+                    <th class="th-2">削除</th>
+                    <th class="th-3">中分類ID</th>
+                    <th class="th-4">中分類名</th>
+                    <th class="th-5">中分類名（英語表記）</th>
+                    <th class="th-6">管理者限定</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = 0; i < Model.Count; i++)
+                {
+                    var key = String.Format("list[{0}].", i);
+                    var item = Model[i];
+
+                    <tr class="datarow">
+                        <td class="td-1 number no"></td>
+                        @Html.Hidden(key + "LocationId", item.LocationId)
+                        @Html.Hidden(key + "DisplayNo", item.DisplayNo)
+                        @Html.Hidden(key + "UpdDate", item.UpdDate)
+                        @Html.Hidden(key + "InsUserId", item.InsUserId)
+                        @Html.Hidden(key + "No", item.No, new { @class = "orderno" })
+                        <td class="td-1 align-center">@Html.CheckBox(key + "DelFlg", item.DelFlg)</td>
+                        <td class="td-2">@item.LocationId</td>
+                        <td class="td-3 inp-txt">@Html.TextBox(key + "LocationName", item.LocationName, new { @class = "table-txt" })</td>
+                        <td class="td-4 inp-txt">@Html.TextBox(key + "LocationNameEng", item.LocationNameEng, new { @class = "table-txt" })</td>
+                        <td class="td-1 align-center inp-txt">@Html.CheckBox(key + "ManagerKbn", item.ManagerKbn)</td>
+                    </tr>
+                }
+                @if (Model.Count == 0)
+                {
+                    <tr class="datarow">
+                        <td class="td-1 number no"></td>
+                        @Html.Hidden("list[0].LocationId", string.Empty)
+                        @Html.Hidden("list[0].DisplayNo", string.Empty)
+                        @Html.Hidden("list[0].UpdDate", string.Empty)
+                        @Html.Hidden("list[0].InsUserId", string.Empty)
+                        @Html.Hidden("list[0].No", 1, new { @class = "orderno" })
+                        <td class="td-1 align-center">@Html.CheckBox("list[0].DelFlg", false)</td>
+                        <td class="td-2"></td>
+                        <td class="td-3 inp-txt">@Html.TextBox("list[0].LocationName", string.Empty, new { @class = "table-txt" })</td>
+                        <td class="td-4 inp-txt">@Html.TextBox("list[0].LocationNameEng", string.Empty, new { @class = "table-txt" })</td>
+                        <td class="td-1 align-center inp-txt">@Html.CheckBox("list[0].ManagerKbn", false)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <section id="btnarea">
+
+            @if ("3".Equals(Session["DISPMODE"]))
+            {
+                <button type="button" name="addbtn" class="btn-add" onclick="add();">追加</button>
+                <button type="button" name="registbtn" class="btn-register" onclick="regist2()">登録</button>
+                
+            }
+            else
+            {
+                <button type="button" name="addbtn" class="btn-add" onclick="add();" @ViewBag.editMode>追加</button>
+                <button type="button" name="registbtn" class="btn-register" onclick="regist();" @ViewBag.editMode>登録</button>
+            }
+        </section>
+    </section>
+}

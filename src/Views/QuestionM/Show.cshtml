@@ -1,0 +1,400 @@
+﻿@model HACCPExtender.Models.Bussiness.BQuestionMs
+
+@Styles.Render("~/Content/css/style.css")
+@Styles.Render("~/Content/css/question.css")
+@Scripts.Render("~/Scripts/js/common.js")
+<script type="text/javascript">
+    $(function () {
+    })
+    function ChangeCondition(elm) {
+        $('.orderno').each(function (i) {
+            $(this).val(i);
+        });
+        if ($('.js_Category').val() == "" || $('.js_Location').val() == "" || !$(elm).hasClass("js_Report")) {
+            $('.js_Report').val("");
+        }
+        $('.js_Report').prop("disabled", false);
+        $('form').attr('action', '@Url.Content("~/QuestionM/ConditionChange")');
+        $('form').submit();
+    }
+    function ChangeAnswerTypeId(elm) {
+        var answerTypeId = $(elm).val();
+
+        var elmThisTr = $(elm).closest('tr');
+        var elmNormalCondition = elmThisTr.find('.js_NormalCondition');
+        var elmNormalCondition1 = elmThisTr.find('input.js_NormalCondition1');
+        var elmNormalCondition2 = elmThisTr.find('input.js_NormalCondition2');
+
+        //回答種類
+        if (answerTypeId == "01" || answerTypeId == "02" || answerTypeId == "03" || answerTypeId == "21" || answerTypeId == "22" || answerTypeId == "23") {
+            elmNormalCondition.prop("disabled", false);
+            elmNormalCondition1.prop("disabled", false);
+            elmNormalCondition1.val("");
+            elmNormalCondition2.prop("disabled", true);
+        }
+        if (answerTypeId == "04" || answerTypeId == "05" || answerTypeId == "12" || answerTypeId == "13"
+            || answerTypeId == "14" || answerTypeId == "15" || answerTypeId == "16" || answerTypeId == "20") {
+            elmNormalCondition.prop("disabled", true);
+            elmNormalCondition1.prop("disabled", true);
+            elmNormalCondition2.prop("disabled", true);
+        }
+        if (answerTypeId == "06" || answerTypeId == "07" || answerTypeId == "10" || answerTypeId == "11") {
+            elmNormalCondition.prop("disabled", false);
+            elmNormalCondition1.prop("disabled", false);
+            elmNormalCondition2.prop("disabled", false);
+        }
+        if (answerTypeId == "08" || answerTypeId == "09"
+            || answerTypeId == "17" || answerTypeId == "18" || answerTypeId == "19") {
+            elmNormalCondition.prop("disabled", false);
+            elmNormalCondition1.prop("disabled", true);
+            elmNormalCondition2.prop("disabled", true);
+        }
+        elmNormalCondition1.val("");
+        elmNormalCondition2.val("");
+    }
+    function ChangeNormalCondition(elm) {
+        var normalCondition = $(elm).val();
+        var elmThisTr = $(elm).closest('tr');
+        var answerTypeIdElm = elmThisTr.find('.js_AnswerTypeId');
+        var answerTypeId = $(answerTypeIdElm).val();
+        var elmNormalCondition1 = elmThisTr.find('input.js_NormalCondition1');
+        var elmNormalCondition2 = elmThisTr.find('input.js_NormalCondition2');
+
+        if (normalCondition != "1" && normalCondition != "2" && normalCondition != "3" && normalCondition != "4" && normalCondition != "5" && normalCondition != "6" && normalCondition != "7" && normalCondition != "8") {
+            elmNormalCondition1.prop("disabled", true);
+        } else {
+            elmNormalCondition1.prop("disabled", false);
+        }
+        elmNormalCondition1.val("");
+        if (normalCondition != "1" && normalCondition != "2") {
+            elmNormalCondition2.prop("disabled", true);
+        } else {
+            elmNormalCondition2.prop("disabled", false);
+        }
+        elmNormalCondition2.val("");
+        if (answerTypeId == "08" || answerTypeId == "09") {
+            elmNormalCondition1.prop("disabled", true);
+            elmNormalCondition2.prop("disabled", true);
+        }
+    }
+    function regist() {
+        $('#message-area').css('display', 'none');
+        if (!confirm("登録します。よろしいですか？")) {
+            $('form').off('submit');
+            return false;
+        }
+        $('.orderno').each(function (i) {
+            $(this).val(i);
+        });
+        $('form').attr('action', '@Url.Content("~/QuestionM/Edit")');
+        $('form').submit();
+    }
+    function add() {
+        $('.orderno').each(function (i) {
+            $(this).val(i);
+        });
+        $('form').attr('action', '@Url.Content("~/QuestionM/Add")');
+        $('form').submit();
+    }
+    function nextMaster() {
+        if (confirm("次のマスタ登録へ進みます。\n画面の編集中のデータは破棄されますがよろしいですか？")) {
+            $('form').attr('action', '@Url.Content("~/QuestionM/InitialSetWorker")');
+            $('form').submit();
+        }
+    }
+</script>
+
+@{
+    if ("3".Equals(Session["DISPMODE"]))
+    {
+        <h1 id="img-title">初期設定</h1>
+        <img src="@Url.Content("~/Content/images/question.png")" id="first-map" />
+        <div>
+            <button type="button" name="skipbtn" value="skip" class="btn-skip" onclick="nextMaster()" @ViewBag.editMode>次のマスタへ進む</button>
+        </div>
+    }
+}
+<h1 class="page-title">設問マスタ</h1>
+@using (Html.BeginForm("Edit", "QuestionM", new { }, FormMethod.Post, new { }))
+{
+    @Html.AntiForgeryToken()
+    <section id="">
+        @Html.ValidationSummary()
+        @{
+            var disp = "none";
+            if (!string.IsNullOrEmpty(ViewBag.registMsg))
+            {
+                disp = "block";
+            }
+            var selectOptionText = string.Empty;
+            var bumonSelected = false;
+            var locationSelected = false;
+        }
+        <div id="message-area" style="display: @disp">
+            <div class="regist-message" style="display: @disp">@ViewBag.registMsg</div>
+        </div>
+        <div id="bumon_select" class="category">
+            <ul>
+                <li><span class="midashi">大分類</span></li>
+                <li>
+                    @foreach (SelectListItem selList in ViewBag.categoryMSelectListItem)
+                    {
+                        if (selList.Value.Equals(Model.BConditionList[0]))
+                        {
+                            selList.Selected = true;
+                            bumonSelected = true;
+                        }
+                        else
+                        {
+                            selList.Selected = false;
+                        }
+                    }
+                    @Html.DropDownList(
+                        "conditionList[0]",             // プロパティ
+                        (IEnumerable<SelectListItem>)ViewBag.categoryMSelectListItem,   // 選択オプション
+                        " 選択してください ",           // 空オプション
+                        new { @id = "conditionList[0]", name = Model.BConditionList[0], @class = "js_Category selectType1 input-area1", @onchange = "ChangeCondition(this)" }    // その他の属性
+                    )
+                </li>
+            </ul>
+        </div>
+        <div id="location_select" class="category">
+            <ul>
+                <li><span class="midashi">中分類</span></li>
+                <li>
+                    @foreach (SelectListItem selList in ViewBag.locationMSelectListItem)
+                    {
+                        if (selList.Value.Equals(Model.BConditionList[1]))
+                        {
+                            selList.Selected = true;
+                            locationSelected = true;
+                        }
+                        else
+                        {
+                            selList.Selected = false;
+                        }
+                    }
+                    @Html.DropDownList(
+                        "conditionList[1]",             // プロパティ
+                        (IEnumerable<SelectListItem>)ViewBag.locationMSelectListItem,   // 選択オプション
+                        " 選択してください ",           // 空オプション
+                        new { @id = "conditionList[1]", name = Model.BConditionList[1], @class = "js_Location selectType1 input-area1", @onchange = "ChangeCondition(this)" }    // その他の属性
+                    )
+                </li>
+            </ul>
+        </div>
+        <div id="report_select" class="category">
+            <ul>
+                <li><span class="midashi">帳票　</span></li>
+                <li>
+                    @{
+                        var disabledReport = false;
+                        if (!bumonSelected || !locationSelected)
+                        {
+                            disabledReport = true;
+                        }
+                        if (disabledReport)
+                        {
+                            @Html.DropDownList(
+                                "conditionList[2]",             // プロパティ
+                                (IEnumerable<SelectListItem>)ViewBag.reportMSelectListItem,   // 選択オプション
+                                " 選択してください ",           // 空オプション
+                                new { @id = "conditionList[2]", name = Model.BConditionList[2], @class = "js_Report selectType1 input-area1", @onchange = "ChangeCondition(this)", @disabled = "disabled" }    // その他の属性
+                            )
+                        }
+                        else
+                        {
+                            foreach (SelectListItem selList in ViewBag.reportMSelectListItem)
+                            {
+                                if (selList.Value.Equals(Model.BConditionList[2]))
+                                {
+                                    selList.Selected = true;
+                                }
+                                else
+                                {
+                                    selList.Selected = false;
+                                }
+                            }
+                            @Html.DropDownList(
+                                "conditionList[2]",             // プロパティ
+                                (IEnumerable<SelectListItem>)ViewBag.reportMSelectListItem,   // 選択オプション
+                                " 選択してください ",           // 空オプション
+                                new { @id = "conditionList[2]", name = Model.BConditionList[2], @class = "js_Report selectType1 input-area1", @onchange = "ChangeCondition(this)" }    // その他の属性
+                            )
+                        }
+                    }
+                </li>
+            </ul>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.BConditionList[2]))
+        {
+            <dev id="sortbtn-area">
+                <input type="button" id="" class="sotrbtn" value="▲" onclick="sortUp()">
+                <input type="button" id="" class="sotrbtn" value="▼" onclick="sortDown()">
+                <span class="">表示順序変更</span>
+            </dev>
+
+            <table id="tbl1" class="header_title">
+                <thead>
+                    <tr class="datarow">
+                        <th class="th-1">No</th>
+                        <th class="th-2">削除</th>
+                        <th class="th-3">設問ID</th>
+                        <th class="th-4">表示項目</th>
+                        <th class="th-5">表示項目（英語表記）</th>
+                        <th class="th-6">表示方法</th>
+                        <th class="th-7" colspan="3">正常結果条件</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < Model.BQuestionMList.Count; i++)
+                    {
+                        var key = String.Format("list[{0}].", i);
+                        var item = Model.BQuestionMList[i];
+                        var disabledNormalCondition1 = false;
+                        if (item.NormalCondition != "1" && item.NormalCondition != "2" && item.NormalCondition != "3" && item.NormalCondition != "4" && item.NormalCondition != "5" && item.NormalCondition != "6" && item.NormalCondition != "7" && item.NormalCondition != "8")
+                        {
+                            disabledNormalCondition1 = true;
+                        }
+                        var disabledNormalCondition2 = false;
+                        if (item.NormalCondition != "1" && item.NormalCondition != "2")
+                        {
+                            disabledNormalCondition2 = true;
+                        }
+                        <tr class="datarow" name="@key + Row">
+                            @Html.Hidden(key + "QuestionId", item.QuestionId)
+                            @Html.Hidden(key + "DisplayNo", item.DisplayNo)
+                            @Html.Hidden(key + "InsUserId", item.InsUserId)
+                            @Html.Hidden(key + "UpdDate", item.UpdDate)
+                            @Html.Hidden(key + "No", item.No, new { @class = "orderno" })
+                            <td class="td-2 number no"></td>
+                            <td class="td-1 align-center">@Html.CheckBox(key + "DelFlg", item.DelFlg)</td>
+                            <td class="td-2">@item.QuestionId</td>
+                            <td class="td-3 inp-txt">@Html.TextBox(key + "Question", item.Question, new { @class = "table-txt" })</td>
+                            <td class="td-4 inp-txt">@Html.TextBox(key + "QuestionEng", item.QuestionEng, new { @class = "table-txt" })</td>
+                            @foreach (SelectListItem selList in ViewBag.answerTypeMSelectListItem)
+                            {
+                                if (selList.Value.Equals(item.AnswerTypeId))
+                                {
+                                    selList.Selected = true;
+                                }
+                                else
+                                {
+                                    selList.Selected = false;
+                                }
+                            }
+                            <td class="td-5 align-center inp-txt">
+                                @Html.DropDownList(
+                                    key + "AnswerTypeId",          // プロパティ
+                                    (IEnumerable<SelectListItem>)ViewBag.answerTypeMSelectListItem,  // 選択オプション
+                                    selectOptionText,          // 空オプション
+                                    new { @id = key + "AnswerTypeId", name = item.AnswerTypeId, @class = "js_AnswerTypeId table select", @onchange = "ChangeAnswerTypeId(this)" }  // その他の属性
+                                )
+                            </td>
+                            @foreach (SelectListItem selList in ViewBag.normalConditionSelectListItem)
+                            {
+                                if (selList.Value.Equals(item.NormalCondition))
+                                {
+                                    selList.Selected = true;
+                                }
+                                else
+                                {
+                                    selList.Selected = false;
+                                }
+                            }
+                            <td class="td-5 align-center inp-txt">
+                                @if (item.AnswerTypeId == "04" || item.AnswerTypeId == "05" 
+                                     || item.AnswerTypeId == "12" || item.AnswerTypeId == "13" || item.AnswerTypeId == "14" || item.AnswerTypeId == "15"
+                                     || item.AnswerTypeId == "16" || item.AnswerTypeId == "20")
+                                {
+                                    @Html.DropDownList(
+                                    key + "NormalCondition",          // プロパティ
+                                    (IEnumerable<SelectListItem>)ViewBag.normalConditionSelectListItem,  // 選択オプション
+                                    selectOptionText,          // 空オプション
+                                    new { @id = key + "NormalCondition", name = item.NormalCondition, @class = "js_NormalCondition table select", @disabled = "disabled", @onchange = "ChangeNormalCondition(this)" }  // その他の属性
+                                    )
+                                }
+                                else
+                                {
+                                    @Html.DropDownList(
+                                    key + "NormalCondition",          // プロパティ
+                                    (IEnumerable<SelectListItem>)ViewBag.normalConditionSelectListItem,  // 選択オプション
+                                    selectOptionText,          // 空オプション
+                                    new { @id = key + "NormalCondition", name = item.NormalCondition, @class = "js_NormalCondition table select", @onchange = "ChangeNormalCondition(this)" }  // その他の属性
+                                    )
+                                }
+
+                            </td>
+                            <td class="td-6 inp-txt">
+                                @if (disabledNormalCondition1 || item.AnswerTypeId == "08" || item.AnswerTypeId == "09")
+                                {
+                                    @Html.TextBox(key + "NormalCondition1", item.NormalCondition1, new { @class = "js_NormalCondition1 table-txt", @disabled = "disabled" })
+                                }
+                                else
+                                {
+                                    @Html.TextBox(key + "NormalCondition1", item.NormalCondition1, new { @class = "js_NormalCondition1 table-txt" })}
+                            </td>
+                            <td class="td-6 inp-txt">
+                                @if (disabledNormalCondition2 || item.AnswerTypeId == "08" || item.AnswerTypeId == "09")
+                                {
+                                    @Html.TextBox(key + "NormalCondition2", item.NormalCondition2, new { @class = "js_NormalCondition2 table-txt", @disabled = "disabled" })
+                                }
+                                else
+                                {
+                                    @Html.TextBox(key + "NormalCondition2", item.NormalCondition2, new { @class = "js_NormalCondition2 table-txt" })}
+                            </td>
+                        </tr>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.BConditionList[2]) && Model.BQuestionMList.Count == 0)
+                    {
+                        <tr class="datarow" name="list[0].Row">
+                            @Html.Hidden("list[0].QuestionId", string.Empty)
+                            @Html.Hidden("list[0].DisplayNo", string.Empty)
+                            @Html.Hidden("list[0].InsUserId", string.Empty)
+                            @Html.Hidden("list[0].UpdDate", string.Empty)
+                            @Html.Hidden("list[0].No", 1, new { @class = "orderno" })
+                            <td class="td-2 number no"></td>
+                            <td class="td-1 align-center">@Html.CheckBox("list[0].DelFlg", false)</td>
+                            <td class="td-2"></td>
+                            <td class="td-3 inp-txt">@Html.TextBox("list[0].Question", string.Empty, new { @class = "table-txt" })</td>
+                            <td class="td-4 inp-txt">@Html.TextBox("list[0].QuestionEng", string.Empty, new { @class = "table-txt" })</td>
+                            <td class="td-5 align-center inp-txt">
+                                @Html.DropDownList(
+                                    string.Empty,          // プロパティ
+                                    (IEnumerable<SelectListItem>)ViewBag.answerTypeMSelectListItem,  // 選択オプション
+                                    selectOptionText,          // 空オプション
+                                    new { id = "list[0].AnswerTypeId", @class = "table select", @onchange = "ChangeAnswerTypeId(this)" }  // その他の属性
+                                )
+                            </td>
+                            <td class="td-5 align-center inp-txt">
+                                @Html.DropDownList(
+                                    string.Empty,          // プロパティ
+                                    (IEnumerable<SelectListItem>)ViewBag.normalConditionSelectListItem,  // 選択オプション
+                                    selectOptionText,          // 空オプション
+                                    new { id = "list[0].NormalCondition", @class = "js_NormalCondition table select", @onchange = "ChangeNormalCondition(this)" }  // その他の属性
+                                )
+                            </td>
+                            <td class="td-6 inp-txt">@Html.TextBox("list[0].NormalCondition1", string.Empty, new { @class = "js_NormalCondition1 table-txt", @Enabled = false })</td>
+                            <td class="td-6 inp-txt">@Html.TextBox("list[0].NormalCondition2", string.Empty, new { @class = "js_NormalCondition2 table-txt", @Enabled = false })</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <section id="btnarea">
+                @if ("3".Equals(Session["DISPMODE"]))
+                {
+                    <button type="button" name="addbtn" class="btn-add" onclick="add();" @ViewBag.editMode>追加</button>
+                    <button type="button" name="registbtn" class="btn-register" onclick="regist();" @ViewBag.editMode>登録</button>
+                }
+                else
+                {
+                    <button type="button" name="addbtn" class="btn-add" onclick="add();" @ViewBag.editMode>追加</button>
+                    <button type="button" name="registbtn" class="btn-register" onclick="regist();" @ViewBag.editMode>登録</button>
+                }
+            </section>
+
+        }
+    </section>
+}

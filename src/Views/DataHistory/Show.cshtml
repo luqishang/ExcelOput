@@ -1,0 +1,333 @@
+﻿
+@model HACCPExtender.Models.Bussiness.BDataHistory
+
+@Styles.Render("~/Content/css/style.css")
+@Styles.Render("~/Content/css/datahistory.css")
+@Scripts.Render("~/Scripts/js/common.js")
+
+<script type="text/javascript">
+    $(function () {
+    })
+    function ChangeCondition(v) {
+        if (v == 1) {
+            $('.js_Location').val("");
+            $('.js_Report').val("");
+        } else if ($('.js_Category').val() == "" || $('.js_Location').val() == "") {
+            $('.js_Report').val("");
+        }
+        $('.js_Report').prop("disabled", false);
+        $('form').attr('action', '@Url.Content("~/DataHistory/ChangeCondition")');
+        $('form').submit();
+    }
+    function ChangePeriodDay(val) {
+        $('.period').css('display', 'none');
+        if (val == '') {
+            $('.result').css('display', 'none');
+        } else {
+            if (!isDate(val)) {
+                alert('YYYY-MM-DDの形式で入力してください。');
+                return false;
+            }
+            if ($('.js_Report').val() != "") {
+                $('form').attr('action', '@Url.Content("~/DataHistory/ChangeCondition")');
+                $('form').submit();
+            }
+        }
+    }
+    function download_report() {
+        $("#message-area").css('display', 'none');
+        if (!confirm("ダウンロード処理を実行します。よろしいですか？")) {
+            $('form').off('submit');
+            return false;
+        }
+        $('.orderno').each(function (i) {
+            $(this).val(i);
+        });
+        //$('#downloadButton').prop("disabled", true);
+        $('form').attr('action', '@Url.Content("~/DataHistory/Download")');
+        $('form').submit();
+    }
+</script>
+
+<h1 class="page-title">データ履歴</h1>
+@using (Html.BeginForm("Edit", "DataHistory", new { }, FormMethod.Post, new { }))
+{
+    @Html.AntiForgeryToken()
+    <section id="">
+        @Html.ValidationSummary()
+        @{
+            var disp = "none";
+            if (!string.IsNullOrEmpty(ViewBag.registMsg))
+            {
+                disp = "block";
+            }
+            var bumonSelected = false;
+            var locationSelected = false;
+        }
+        <div id="message-area" style="display: @disp">
+            <div class="regist-message" style="display: @disp">@Html.Raw(Html.Encode(ViewBag.registMsg).Replace("\n", "<br />"))</div>
+        </div>
+        <div class="category">
+            <ul>
+                <li><span class="midashi">大分類</span></li>
+                <li>
+                    @foreach (SelectListItem selList in ViewBag.categoryMSelectListItem)
+                    {
+                        if (selList.Value.Equals(Model.BConditionList[0]))
+                        {
+                            selList.Selected = true;
+                            bumonSelected = true;
+                        }
+                        else
+                        {
+                            selList.Selected = false;
+                        }
+                    }
+                    @Html.DropDownList(
+                        "conditionList[0]",             // プロパティ
+                        (IEnumerable<SelectListItem>)ViewBag.categoryMSelectListItem,   // 選択オプション
+                        " 選択してください ",           // 空オプション
+                        new { @id = "conditionList[0]", name = Model.BConditionList[0], @class = "js_Category selectType1 input-area1", @onchange = "ChangeCondition(1)" }    // その他の属性
+                    )
+                </li>
+            </ul>
+        </div>
+        <div class="category">
+            <ul>
+                <li><span class="midashi">中分類</span></li>
+                <li>
+                    @foreach (SelectListItem selList in ViewBag.locationMSelectListItem)
+                    {
+                        if (selList.Value.Equals(Model.BConditionList[1]))
+                        {
+                            selList.Selected = true;
+                            locationSelected = true;
+                        }
+                        else
+                        {
+                            selList.Selected = false;
+                        }
+                    }
+                    @Html.DropDownList(
+                        "conditionList[1]",             // プロパティ
+                        (IEnumerable<SelectListItem>)ViewBag.locationMSelectListItem,   // 選択オプション
+                        " 選択してください ",           // 空オプション
+                        new { @id = "conditionList[1]", name = Model.BConditionList[1], @class = "js_Location selectType1 input-area1", @onchange = "ChangeCondition(2)" }    // その他の属性
+                    )
+                </li>
+            </ul>
+        </div>
+        <div class="category subarea">
+            <ul>
+                <li><span class="midashi">帳票　</span></li>
+                <li>
+                    @{
+                        var disabledReport = false;
+                        if (!bumonSelected || !locationSelected)
+                        {
+                            disabledReport = true;
+                        }
+                        if (disabledReport)
+                        {
+                            @Html.DropDownList(
+                                "conditionList[2]",             // プロパティ
+                                (IEnumerable<SelectListItem>)ViewBag.reportMSelectListItem,   // 選択オプション
+                                " 選択してください ",           // 空オプション
+                                new { @id = "conditionList[2]", name = Model.BConditionList[2], @class = "js_Report selectType1 input-area1", @onchange = "ChangeCondition(3)", @disabled = "disabled" }    // その他の属性
+                            )
+                        }
+                        else
+                        {
+                            foreach (SelectListItem selList in ViewBag.reportMSelectListItem)
+                            {
+                                if (selList.Value.Equals(Model.BConditionList[2]))
+                                {
+                                    selList.Selected = true;
+                                }
+                                else
+                                {
+                                    selList.Selected = false;
+                                }
+                            }
+                            @Html.DropDownList(
+                                "conditionList[2]",             // プロパティ
+                                (IEnumerable<SelectListItem>)ViewBag.reportMSelectListItem,   // 選択オプション
+                                " 選択してください ",           // 空オプション
+                                new { @id = "conditionList[2]", name = Model.BConditionList[2], @class = "js_Report selectType1 input-area1", @onchange = "ChangeCondition()" }    // その他の属性
+                            )
+                        }
+                    }
+                </li>
+            </ul>
+        </div>
+        <dev class="category" id="recorddate-area">
+            <ul>
+                <li><input type="date" id="conditionList[3]" name="conditionList[3]" value="@Model.BConditionList[3]" class="hiduke" Onchange="ChangePeriodDay(this.value)" min="1900-01-01" max="2100-12-31"></li>
+                @if (!string.IsNullOrEmpty(Model.PeriodStartDate) || !string.IsNullOrEmpty(Model.PeriodEndDate))
+                {
+                    <li class="period">データ記録範囲： @Model.PeriodStartDate ～ @Model.PeriodEndDate</li>
+                    <li><button type="button" name="download" id="downloadButton" class="btn-register download-btn" onclick="download_report()">ダウンロード</button></li>
+                }
+            </ul>
+        </dev>
+
+        <div class="result">
+            @if (Model.TemperatureControlDatas != null && Model.TemperatureControlDatas.Count() > 0)
+            {
+                var header = Model.TemperatureControlDatas[0][0].HeaderDic;
+                <table id="tbl2" class="header_title">
+                    <thead>
+                        <tr>
+                            <th class="th-1">データ記録日時</th>
+                            @for (var k = 0; k < Model.TemperatureControlDatas.Count; k++)
+                            {
+                                var item = Model.TemperatureControlDatas[k];
+                                for (var i = 0; i < item.Count; i++)
+                                {
+                                    var result = item[i];
+                                    var answer = result.AnserDic;
+                                    var attachFlg = result.AttachDic;
+                                    <td class="td-1">@result.DataYMD</td>
+                                }
+                            }
+                        </tr>
+                        <tr>
+                            <th class="th-2">作業者</th>
+                            @for (var k = 0; k < Model.TemperatureControlDatas.Count; k++)
+                            {
+                                var item = Model.TemperatureControlDatas[k];
+                                for (var i = 0; i < item.Count; i++)
+                                {
+                                    var result = item[i];
+                                    var answer = result.AnserDic;
+                                    var attachFlg = result.AttachDic;
+                                    <td class="td-2">@result.WorkerName</td>
+                                }
+                            }
+                        </tr>
+                        @foreach (KeyValuePair<int, string> kvp in header)
+                        {
+                            <tr>
+                                <th class="th-3">@kvp.Value</th>
+                                @for (var k = 0; k < Model.TemperatureControlDatas.Count; k++)
+                                {
+                                    var item = Model.TemperatureControlDatas[k];
+                                    for (var i = 0; i < item.Count; i++)
+                                    {
+                                        var result = item[i];
+                                        var answer = result.AnserDic;
+                                        var attachFlg = result.AttachDic;
+                                        if (attachFlg[kvp.Key])
+                                        {
+                                            <td class="td-3 ">
+                                                <a href="~/@answer[kvp.Key]" target="_blank">画像</a>
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td class="td-3 ">@answer[kvp.Key]</td>
+                                        }
+                                    }
+                                }
+                            </tr>
+                        }
+                    </thead>
+                </table>
+                @*@if (Model.TemperatureControlDatas != null && Model.TemperatureControlDatas.Count() > 0)
+                    {
+                        for (var k = 0; k < Model.TemperatureControlDatas.Count; k++)
+                        {
+                            var item = Model.TemperatureControlDatas[k];
+                            var header = item[0].HeaderDic;
+
+                            <table id="tbl2" class="header_title">
+                                <thead>
+                                    <tr>
+                                        <th class="th-1">データ記録日時</th>
+                                        <th class="th-2">作業者</th>
+                                        @foreach (KeyValuePair<int, string> kvp in header)
+                                        {
+                                            <th class="th-3">@kvp.Value</th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (var i = 0; i < item.Count; i++)
+                                    {
+                                        var result = item[i];
+                                        var answer = result.AnserDic;
+                                        var attachFlg = result.AttachDic;
+
+                                        <tr>
+                                            <td class="td-1">@result.DataYMD</td>
+                                            <td class="td-2">@result.WorkerName</td>
+                                            @foreach (KeyValuePair<int, string> kvp in answer)
+                                            {
+                                                if (attachFlg[kvp.Key])
+                                                {
+                                                    <td class="td-3 ">
+                                                        <a href="~/@kvp.Value" target="_blank">画像</a>
+                                                    </td>
+                                                }
+                                                else
+                                                {
+                                                    <td class="td-3 ">@kvp.Value</td>
+                                                }
+                                            }
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }*@
+
+                <div class="rireki-title">承認履歴（大分類承認・施設承認）</div>
+                <table id="tbl2">
+                    <thead>
+                        <tr>
+                            <th class="th-1">承認ノード</th>
+                            <th class="th-2">処理日時</th>
+                            <th class="th-3">コメント</th>
+                            <th class="th-4">ステータス</th>
+                            <th class="th-5">承認者</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.Historys.Count; i++)
+                        {
+                            var key = String.Format("list[{0}].", i);
+                            var item = Model.Historys[i];
+                            <tr>
+                                <td class="td-1">@item.APPROVALNODE</td>
+                                <td class="td-2">@item.APPROVALDATE</td>
+                                <td class="td-3">@item.APPROVALCOMMENT</td>
+                                @if ("0".Equals(item.STATUS))
+                                {
+                                    <td class="td-4">承認待ち</td>
+                                }
+                                else if ("1".Equals(item.STATUS))
+                                {
+                                    <td class="td-4">承認済</td>
+                                }
+                                else
+                                {
+                                    <td class="td-4">差戻し</td>
+                                }
+                                <td class="td-5">@item.APPROVALUSERNAME</td>
+                            </tr>
+                        }
+                        @if (Model.Historys.Count() == 0)
+                        {
+                            <tr>
+                                <td class="td-1" colspan="5">データがありません</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="nodata">@ViewBag.noDateMsg</div>
+            }
+        </div>
+    </section>
+}

@@ -1,0 +1,165 @@
+﻿@model HACCPExtender.Models.Bussiness.BManualMs
+
+@Styles.Render("~/Content/css/style.css")
+@Styles.Render("~/Content/css/guidebook.css")
+@Scripts.Render("~/Scripts/js/common.js")
+
+<script type="text/javascript">
+    $(function() {
+        adjust();
+
+        $('.btn-close').on('click', function(event) {
+            $('#modal1').hide();
+        });
+    });
+    function addFile() {
+        $('input[name="targetManualId"]').val('');
+        $('input[name="manualName"]').val('');
+        $('input[name="manualName"]').attr('readonly',false);
+        $('input[name="manualName"]').css('background-color', 'lemonchiffon');
+        $('input[name="uploadManual"]').val('');
+        $('input[name="uploadManual"]').attr('readonly',false);
+        $('input[name="uploadManual"]').css('background-color', 'lemonchiffon');
+        $('#modal1').show();
+    }
+    function updateFile(elm) {
+        var elmThisTr = $(elm).closest('tr');
+        var elmTargetManualId = elmThisTr.find('input.js_ManualId');
+        var elmTargetManualName = elmThisTr.find('input.js_ManualName');
+        var elmTargetDelFlg = elmThisTr.find('input.js_DelFlg');
+
+        $('input[name="targetManualId"]').val(elmTargetManualId.val());
+        $('input[name="manualName"]').val(elmTargetManualName.val());
+        $('input[name="manualName"]').attr('readonly',false);
+        $('input[name="manualName"]').css('background-color', 'lemonchiffon');
+        $('input[name="uploadManual"]').val('');
+        $('input[name="uploadManual"]').attr('readonly',false);
+        $('input[name="uploadManual"]').css('background-color', 'lemonchiffon');
+        $('#modal1').show();
+    }
+    function downloadFile(elm) {
+        var elmThisTr = $(elm).closest('tr');
+        var elmTargetManualId = elmThisTr.find('input.js_ManualId');
+
+        $('input[name="targetManualId"]').val(elmTargetManualId.val());
+        $('form').attr('action', '@Url.Content("~/ManualM/FileDownload")');
+        $('form').submit();
+    }
+    function deleteFile(elm) {
+        var elmThisTr = $(elm).closest('tr');
+        var elmTargetManualId = elmThisTr.find('input.js_ManualId');
+        var elmTargetNo = elmThisTr.find('input.orderno');
+        var elmTargetDelFlg = elmThisTr.find('input.js_DelFlg');
+
+        $('input[name="targetManualId"]').val(elmTargetManualId.val());
+        elmTargetDelFlg.val(true);
+
+        $("#message-area").css('display', 'none');
+        if (!confirm("No=[" + (parseInt(elmTargetNo.val()) + 1).toString() + "]のデータを削除します。よろしいですか？")) {
+            $('form').off('submit');
+            $('input[name="targetManualId"]').val('');
+            elmTargetDelFlg.val(false);
+            return false;
+        }
+        $('form').attr('action', '@Url.Content("~/ManualM/Delete")');
+        $('form').submit();
+    }
+    function regist() {
+        $("#message-area").css('display', 'none');
+        if (!confirm("登録します。よろしいですか？")) {
+            $('form').off('submit');
+            $('input[name="targetManualId"]').val('');
+            $('input[name="manualName"]').val('');
+            $('input[name="uploadManual"]').val('');
+            return false;
+        }        
+        $('form').attr('action', '@Url.Content("~/ManualM/Edit")');
+        $('form').submit();
+    }
+</script>
+
+
+<h1 class="page-title">手引書マスタ</h1>
+@using (Html.BeginForm("Edit", "ManualM", new { }, FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+<section id="">
+    @Html.ValidationSummary()
+    @{
+        var disp = "none";
+        if (!string.IsNullOrEmpty(ViewBag.registMsg))
+        {
+            disp = "block";
+        }
+    }
+    <div id="message-area" style="display: @disp">
+        <div class="regist-message" style="display: @disp">@ViewBag.registMsg</div>
+    </div>
+    @if (Model.BManualMList.Count() > 0)
+    {
+        <table id="tbl1">
+            <thead>
+                <tr class="datarow">
+                    <th class="th-1">No</th>
+                    <th class="th-2">アップロード日</th>
+                    <th class="th-3">手引書名</th>
+                    <th class="th-4">手引書データ</th>
+                    <th class="th-5"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = 0; i < Model.BManualMList.Count; i++)
+                {
+                    var key = String.Format("list[{0}].", i);
+                    var item = Model.BManualMList[i];
+                    <tr name="@key + Row">
+                        @Html.Hidden(key + "DelFlg", false, new { @class = "js_DelFlg" })
+                        @Html.Hidden(key + "ManualId", item.ManualId, new { @class = "js_ManualId" })
+                        @Html.Hidden(key + "UploadDate", item.UploadDate)
+                        @Html.Hidden(key + "ManualName", item.ManualName, new { @class = "js_ManualName" })
+                        @Html.Hidden(key + "ManualFileName", item.ManualFileName)
+                        @Html.Hidden(key + "InsUserId", item.InsUserId)
+                        @Html.Hidden(key + "UpdDate", item.UpdDate)
+                        @Html.Hidden(key + "No", item.No, new { @class = "orderno" })
+                        <td class="td-2 number no"></td>
+                        <td class="td-1">@item.UploadDate</td>
+                        <td class="td-2">@item.ManualName</td>
+                        <td class="td-3">@item.ManualFileName</td>
+                        <td class="td-4">
+                            <ul class="table-btn">
+                                <li><button type="button" name="upload" class="btn-register download-btn" onclick="updateFile(this)">アップロード</button></li>
+                                <li><button type="button" name="download" class="btn-csvout download-btn" onclick="downloadFile(this)">ダウンロード</button></li>
+                                <li><button type="button" name="delete" class="btn-delete" onclick="deleteFile(this)">削除</button></li>
+                            </ul>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    <section id="btnarea">
+        <button type="button" name="addbtn" class="btn-add" onclick="addFile();" @ViewBag.editMode>追加</button>
+    </section>
+    @Html.Hidden("targetManualId", string.Empty)
+    <div id="modal1">
+        <div id="modal1_content">
+            <div id="category">
+                <span class="modal-title">手引書アップロード</span>
+            </div>
+            <ul>
+                <li class="period-tittle">手引書名</li>
+                <li>@Html.TextBox("manualName", string.Empty, new { @class = "modal-txt" })</li>
+                <br>
+                <li class="period-tittle">手引書ファイル</li>
+                <li>@Html.TextBox("uploadManual", string.Empty, new { @type = "file" })</li>
+            </ul>
+            <div>
+                <ul class="modal-btn">
+                    <li><button type="button" class="btn-register btn-m" onclick="regist();">登録</button></li>
+                    <li class="closed"><button type="button" class="btn-close">閉じる</button></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+}

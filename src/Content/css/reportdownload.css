@@ -1,0 +1,134 @@
+table {
+    /* width: 100%; */
+    border-collapse: separate;
+    border-spacing :  0;
+    font-size: 14px;
+}
+table th:last-child {
+    border-right: 1px solid #3c6690;
+}
+table th{
+    text-align: left;
+    color:white;
+    background: linear-gradient(#829ebc,#225588);
+    border-left: 1px solid #3c6690;
+    border-top: 1px solid #3c6690;
+    border-bottom: 1px solid #3c6690;
+    /* width: 25%; */
+    padding: 5px 10px;
+}
+table td{
+    text-align: left;
+    border-left: 1px solid #a8b7c5;
+    border-bottom: 1px solid #a8b7c5;
+    border-top:none;
+    /* width: 25%; */
+    padding: 5px 10px;
+    /* background-color: #ffffff; */
+  }
+table td:last-child{
+  border-right: 1px solid #a8b7c5;
+}
+#tbl1 {
+    margin-left: 20px;
+    background-color: #ffffff;
+}
+.td-1 {
+    width: 50px;
+}
+.td-2 {
+    width: 80px;
+}
+.td-3 {
+    width: 120px;
+}
+.td-4 {
+    width: 120px;
+}
+.td-5 {
+    width: 120px;
+}
+.td-6 {
+    width: 180px;
+}
+.td-7 {
+    width: 150px;
+}
+
+.category-title {
+    margin-left: 20px;
+    margin-top: 0;
+    margin-bottom: 5px;
+    padding-top: 0;
+    padding-bottom: 0;
+    font-size: 17px;
+}
+#period {
+    margin-top: 20px;
+}
+#period ul li{
+    display: inline;
+}
+#period ul{
+    margin-left: 0;
+    padding-left: 20px;
+}
+#period li{
+    margin-right: 15px;
+}
+.period-tittle {
+    font-size: 15px;
+    font-weight: bold;
+}
+.hiduke {
+    width: 180px;
+    height: 2em;
+    background-color: #fdfcf1;
+    font-size: 16px;
+    text-align: center;
+}
+.download-btn {
+    margin-left: 30px;
+}
+#category ul li{
+    display: inline;
+}
+#category ul{
+    margin-left: 0;
+    padding-left: 20px;
+}
+#category li{
+    margin-right: 15px;
+}
+.category-title {
+    margin-left: 20px;
+    margin-top: 0;
+    margin-bottom: 5px;
+    padding-top: 0;
+    padding-bottom: 0;
+    font-size: 17px;
+    font-weight: bold;
+}
+.midashi {
+    font-size: 17px;
+    font-weight: bold;
+}
+.category ul li {
+    display: inline;
+}
+
+.category ul {
+    margin-left: 0;
+    padding-left: 20px;
+}
+
+.category li {
+    margin-right: 15px;
+}
+.selectType1 {
+    width: 200px;
+    height: 20px;
+}
+.nodata {
+    margin-left: 20px;
+}

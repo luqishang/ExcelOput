@@ -1,0 +1,118 @@
+.subtitle {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+.subtitle2 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+table {
+    /*width: 850px;*/
+    border-collapse: separate;
+    border-spacing :  0;
+    font-size: 14px;
+}
+table th:last-fiest {
+    border-left: 1px solid #3c6690;
+}
+table th:last-child {
+    border-right: 1px solid #3c6690;
+}
+table th{
+    text-align: left;
+    color:white;
+    background: linear-gradient(#829ebc,#225588);
+    border-left: 1px solid #3c6690;
+    border-top: 1px solid #3c6690;
+    border-bottom: 1px solid #3c6690;
+    padding: 5px 10px;
+}
+table td{
+    text-align: left;
+    border-bottom: 1px solid #a8b7c5;
+    border-top:none;
+    padding: 5px 10px;
+    background-color: #ffffff;
+}
+#tbl1 td:first-child,
+#tbl2 td:first-child{
+    border-left: 1px solid #a8b7c5;
+}
+#tbl1 td:last-child{
+  border-right: 1px solid #a8b7c5;
+}
+#tbl1 {
+    margin-left: 20px;
+    background-color: #ffffff;   
+    border-top: 1px solid #a8b7c5;
+}
+/*#tbl1 .td-1 {
+    width: 100px;
+}
+#tbl1 .td-2 {
+    width: 800px;
+}*/
+#tbl2 td {
+    border-right: 1px solid #a8b7c5;
+}
+/*#tbl2 .td-1 {
+    width: 220px;
+}
+#tbl2 .td-2 {
+    width: 220px;
+}
+#tbl2 .td-3 {
+    width: 60px;
+}
+#tbl2 .td-4 {
+    width: 100px;
+}
+#tbl2 .td-5 {
+    width: 120px;
+    padding-left: 20px;
+}*/
+#tbl2 .td-4 a,
+#tbl2 .td-5 a {
+    text-decoration: underline;
+}
+.infomation {
+    height: 200px;
+    overflow-y: scroll;
+    width: fit-content;  
+    direction:ltr;
+}
+table select {
+    width: 140px;
+}
+.shoninjh {
+    margin-left: 20px;
+    font-weight: 500;
+    font-size: 16px;
+}
+.bumonblock {
+    margin-bottom: 20px;
+}
+#table-content {
+    width: max-content;
+}
+.unvisible {
+    background-color: gray;
+}
+.txt-left {
+    text-align: right;
+}
+.archivejh {
+    margin-left: 20px;
+    margin-bottom: 20px;
+    font-size: 15px;
+}
+.archivejh a {
+    text-decoration: underline;
+}
+#msg-nodata {
+    margin-bottom: 50px;
+}
+.no-massg {
+    margin-left: 20px;
+    font-size: 16px;
+}

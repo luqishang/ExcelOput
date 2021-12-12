@@ -1,0 +1,79 @@
+﻿
+@Styles.Render("~/Content/css/style.css")
+@Styles.Render("~/Content/css/managerlogin.css")
+@Scripts.Render("~/Scripts/js/common.js")
+
+<script type="text/javascript">
+    $(function () {
+        var disp = $('#DisplayDrop').val();
+        if (disp == '1') {
+            $('#ManagerDrop').prop("disabled", false);
+        } else {
+            $('#ManagerDrop').val('');
+            $('#ManagerDrop').prop("disabled", true);
+        }
+    });
+    function kick() {
+        $('form').attr('action', '@Url.Content("~/Stub/kick")');
+        $('form').submit();
+    }
+    function CallChangeDisp(val) {
+        var shop = $('#ShopDrop').val();
+        if (val == '1' && shop != '') {
+            $('form').attr('action', '@Url.Content("~/Stub/ShopChange")');
+            $('form').submit();
+        } else {
+            $('#ManagerDrop').val('');
+            $('#ManagerDrop').prop("disabled", true);
+        }
+    }
+    function CallChangeShop(val) {
+        var editmode = $('#DisplayDrop').val();
+        if (val != '' && editmode == '1') {
+            $('form').attr('action', '@Url.Content("~/Stub/ShopChange")');
+            $('form').submit();
+        } else {
+            $('#ManagerDrop').val('');
+            $('#ManagerDrop').prop("disabled", true);
+        }
+    }
+</script>
+
+<h1 class="page-title">Extender起動設定</h1>
+@using (Html.BeginForm("kick", "Extender", new { }, FormMethod.Post, new { }))
+{
+    @Html.AntiForgeryToken()
+    <section id="">
+        @Html.ValidationSummary()
+        <div id="category">
+            <div id="category">
+                <ul>
+                    <li><span id="login-lbl">画面編集モード</span></li>
+                    <li>
+                        @Html.DropDownList("DisplayDrop", (IEnumerable<SelectListItem>)ViewBag.DisplayOptions, "選択してください", new { @class = "selectType1 input-area1", @onchange = "CallChangeDisp(this.value)" })
+                    </li>
+                </ul>
+            </div>
+            <ul>
+                <li><span id="login-lbl">店舗ID　　　　</span></li>
+                <li>
+                    @Html.DropDownList("ShopDrop", (IEnumerable<SelectListItem>)ViewBag.ShopOptions, "選択してください", new { @class = "selectType1 input-area1", @onchange = "CallChangeShop(this.value)" })
+                </li>
+            </ul>
+        </div>
+        <div id="category">
+            <ul>
+                <li><span id="login-lbl">管理作業者　　</span></li>
+                <li>
+                    @Html.DropDownList("ManagerDrop", (IEnumerable<SelectListItem>)ViewBag.SnnOptions, "選択してください", new { @class = "selectType1 input-area1" })
+                </li>
+            </ul>
+            <span style="margin-left:20px;">
+                ※画面編集モードを「初回ログイン」にした場合は業務設定画面へ遷移します。その他はトップページへ遷移。
+            </span>
+        </div>
+        <section id="btnarea">
+            <button type="button" name="registbtn" value="regist" class="btn-register" onclick="kick()" @ViewBag.disabled>起動条件設定</button>
+        </section>
+    </section>
+}

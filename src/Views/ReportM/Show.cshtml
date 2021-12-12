@@ -1,0 +1,393 @@
+﻿@model HACCPExtender.Models.Bussiness.BReportMs
+
+@Styles.Render("~/Content/css/style.css")
+@Styles.Render("~/Content/css/report.css")
+@Scripts.Render("~/Scripts/js/common.js")
+<script type="text/javascript">
+    $(function () {
+    })
+    function ChangeCondition() {
+        $('.orderno').each(function (i) {
+            $(this).val(i);
+        });
+        $('form').attr('action', '@Url.Content("~/ReportM/ConditionChange")');
+        $('form').submit();
+    }
+    function ChangePeriod(elm) {
+        var period = $(elm).val();
+        var elmThisTr = $(elm).closest('tr');
+        var elmBaseMonth = elmThisTr.find('select.js_BaseMonth');
+        var elmReferenceDate = elmThisTr.find('select.js_ReferenceDate');
+        if (period == "4" || period == "5") {
+            elmBaseMonth.prop("disabled", false);
+        } else {
+            elmBaseMonth.prop("disabled", true);
+        }
+        elmBaseMonth.val("");
+        if (period == "2" || period == "3" || period == "4" || period == "5") {
+            if (period == "2") {
+                elmReferenceDate.html($('#ReferenceDateOneWeek').html());
+            } else if (period == "3") {
+                elmReferenceDate.html($('#ReferenceDateOneMonth').html());
+            } else if (period == "4" || period == "5") {
+                elmReferenceDate.html($('#ReferenceDateSeveralMonth').html());
+            }
+            elmReferenceDate.prop("disabled", false);
+        } else {
+            elmReferenceDate.prop("disabled", true);
+        }
+        elmReferenceDate.val("");
+    }
+    function regist() {
+        $('#message-area').css('display', 'none');
+        if (!confirm("登録します。よろしいですか？")) {
+            $('form').off('submit');
+            return false;
+        }
+        $('.orderno').each(function (i) {
+            $(this).val(i);
+        });
+        $('form').attr('action', '@Url.Content("~/ReportM/Edit")');
+        $('form').submit();
+    }
+    function add() {
+        $('.orderno').each(function (i) {
+            $(this).val(i);
+        });
+        $('form').attr('action', '@Url.Content("~/ReportM/Add")');
+        $('form').submit();
+    }
+</script>
+
+<h1 class="page-title">帳票マスタ</h1>
+@using (Html.BeginForm("Edit", "ReportM", new { }, FormMethod.Post, new { }))
+{
+    @Html.AntiForgeryToken()
+<section id="">
+    @Html.ValidationSummary()
+    @{
+        var disp = "none";
+        if (!string.IsNullOrEmpty(ViewBag.registMsg))
+        {
+            disp = "block";
+        }
+        var selectOptionText = string.Empty;
+    }
+    @{
+        @Html.DropDownList(
+            "ReferenceDateOneWeek",          // プロパティ
+            (IEnumerable<SelectListItem>)ViewBag.referenceDateSelectListItemOneWeek,  // 選択オプション
+            selectOptionText,          // 空オプション
+            new { id = "ReferenceDateOneWeek", name = "ReferenceDateOneWeek", @style = "display: none" }  // その他の属性
+        )
+        @Html.DropDownList(
+            "ReferenceDateOneMonth",          // プロパティ
+            (IEnumerable<SelectListItem>)ViewBag.referenceDateSelectListItemOneMonth,  // 選択オプション
+            selectOptionText,          // 空オプション
+            new { id = "ReferenceDateOneMonth", name = "ReferenceDateOneMonth", @style = "display: none" }  // その他の属性
+        )
+        @Html.DropDownList(
+            "ReferenceDateSeveralMonth",          // プロパティ
+            (IEnumerable<SelectListItem>)ViewBag.referenceDateSelectListItemSeveralMonth,  // 選択オプション
+            selectOptionText,          // 空オプション
+            new { id = "ReferenceDateSeveralMonth", name = "ReferenceDateSeveralMonth", @style = "display: none" }  // その他の属性
+        )
+    }
+    <div id="message-area" style="display: @disp">
+        <div class="regist-message" style="display: @disp">@ViewBag.registMsg</div>
+    </div>
+    <div id="bumon_select" class="category">
+        <ul>
+            <li><span class="midashi">大分類</span></li>
+            <li>
+                @foreach (SelectListItem selList in ViewBag.categoryMSelectListItem)
+                {
+                    if (selList.Value.Equals(Model.BConditionList[0]))
+                    {
+                        selList.Selected = true;
+                    }
+                    else
+                    {
+                        selList.Selected = false;
+                    }
+                }
+                @Html.DropDownList(
+                    "conditionList[0]",             // プロパティ
+                    (IEnumerable<SelectListItem>)ViewBag.categoryMSelectListItem,   // 選択オプション
+                    " 選択してください ",           // 空オプション
+                    new { @id = "conditionList[0]", name = Model.BConditionList[0], @class = "selectType1 input-area1", @onchange = "ChangeCondition()" }    // その他の属性
+                )
+            </li>
+        </ul>
+    </div>
+    @if (Model.BReportMList.Count() > 0)
+    {
+        <dev id="sortbtn-area">
+            <input type="button" id="" class="sotrbtn" value="▲" onclick="sortUp()">
+            <input type="button" id="" class="sotrbtn" value="▼" onclick="sortDown()">
+            <span class="">表示順序変更</span>
+        </dev>
+
+        <table id="tbl1" class="header_title">
+            <thead>
+                <tr class="datarow">
+                    <th class="th-1">No</th>
+                    <th class="th-2">削除</th>
+                    <th class="th-3">帳票ID</th>
+                    <th class="th-4">中分類名</th>
+                    <th class="th-5">帳票名</th>
+                    <th class="th-6">帳票タイプ</th>
+                    <th class="th-7">捺印欄数</th>
+                    <th class="th-8">周期</th>
+                    <th class="th-9">基準月</th>
+                    <th class="th-10">基準日（曜日）</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = 0; i < Model.BReportMList.Count; i++)
+                {
+                    var key = String.Format("list[{0}].", i);
+                    var item = Model.BReportMList[i];
+                    var disabledBaseMonth = false;
+                    if (item.Period != "4" && item.Period != "5")
+                    {
+                        disabledBaseMonth = true;
+                    }
+                    var disabledReferenceDate = false;
+                    if (item.Period != "2" && item.Period != "3" && item.Period != "4" && item.Period != "5")
+                    {
+                        disabledReferenceDate = true;
+                    }
+                    var ReferenceDateList = ViewBag.referenceDateSelectListItemOneWeek;
+                    if (item.Period == "3")
+                    {
+                        ReferenceDateList = ViewBag.referenceDateSelectListItemOneMonth;
+                    }
+                    else if (item.Period == "4" || item.Period == "5")
+                    {
+                        ReferenceDateList = ViewBag.referenceDateSelectListItemSeveralMonth;
+                    }
+                    <tr class="datarow" name="@key + Row">
+                        @Html.Hidden(key + "ReportId", item.ReportId)
+                        @Html.Hidden(key + "DisplayNo", item.DisplayNo)
+                        @Html.Hidden(key + "InsUserId", item.InsUserId)
+                        @Html.Hidden(key + "UpdDate", item.UpdDate)
+                        @Html.Hidden(key + "No", item.No, new { @class = "orderno" })
+                        <td class="td-2 number no"></td>
+                        <td class="td-1 align-center">@Html.CheckBox(key + "DelFlg", item.DelFlg)</td>
+                        <td class="td-2">@item.ReportId</td>
+                        @foreach (SelectListItem selList in ViewBag.locationMSelectListItem)
+                        {
+                            if (selList.Value.Equals(item.LocationId))
+                            {
+                                selList.Selected = true;
+                            }
+                            else
+                            {
+                                selList.Selected = false;
+                            }
+                        }
+                        <td class="td-3 align-center inp-txt">
+                            @Html.DropDownList(
+                                key + "LocationId",          // プロパティ
+                                (IEnumerable<SelectListItem>)ViewBag.locationMSelectListItem,  // 選択オプション
+                                " 選択してください ",          // 空オプション
+                                new { @id = key + "LocationId", name = item.LocationId, @class = "table select" }  // その他の属性
+                            )
+                        </td>
+                        <td class="td-4 inp-txt">@Html.TextBox(key + "ReportName", item.ReportName, new { @class = "table-txt" })</td>
+                        @foreach (SelectListItem selList in ViewBag.reportTemplateMSelectListItem)
+                        {
+                            if (selList.Value.Equals(item.ReportTemplateId))
+                            {
+                                selList.Selected = true;
+                            }
+                            else
+                            {
+                                selList.Selected = false;
+                            }
+                        }
+                        <td class="td-5 align-center inp-txt">
+                            @Html.DropDownList(
+                                key + "ReportTemplateId",          // プロパティ
+                                (IEnumerable<SelectListItem>)ViewBag.reportTemplateMSelectListItem,  // 選択オプション
+                                " 選択してください ",          // 空オプション
+                                new { @id = key + "ReportTemplateId", name = item.ReportTemplateId, @class = "table select" }  // その他の属性
+                            )
+                        </td>
+                        @foreach (SelectListItem selList in ViewBag.stampFieldSelectListItem)
+                        {
+                            if (selList.Value.Equals(item.StampField))
+                            {
+                                selList.Selected = true;
+                            }
+                            else
+                            {
+                                selList.Selected = false;
+                            }
+                        }
+                        <td class="td-5 align-center inp-txt">
+                            @Html.DropDownList(
+                                key + "StampField",          // プロパティ
+                                (IEnumerable<SelectListItem>)ViewBag.stampFieldSelectListItem,  // 選択オプション
+                                selectOptionText,          // 空オプション
+                                new { @id = key + "StampField", name = item.StampField, @class = "table select" }  // その他の属性
+                            )
+                        </td>
+                        @foreach (SelectListItem selList in ViewBag.periodSelectListItem)
+                        {
+                            if (selList.Value.Equals(item.Period))
+                            {
+                                selList.Selected = true;
+                            }
+                            else
+                            {
+                                selList.Selected = false;
+                            }
+                        }
+                        <td class="td-5 align-center inp-txt">
+                            @Html.DropDownList(
+                                key + "Period",          // プロパティ
+                                (IEnumerable<SelectListItem>)ViewBag.periodSelectListItem,  // 選択オプション
+                                selectOptionText,          // 空オプション
+                                new { @id = key + "Period", name = item.Period, @class = "js_Period table select", @onchange = "ChangePeriod(this)" }  // その他の属性
+                            )
+                        </td>
+                        @foreach (SelectListItem selList in ViewBag.baseMonthSelectListItem)
+                        {
+                            if (selList.Value.Equals(item.BaseMonth))
+                            {
+                                selList.Selected = true;
+                            }
+                            else
+                            {
+                                selList.Selected = false;
+                            }
+                        }
+                        <td class="td-5 align-center inp-txt">
+                            @if (disabledBaseMonth)
+                            {
+                                @Html.DropDownList(
+                                    key + "BaseMonth",          // プロパティ
+                                    (IEnumerable<SelectListItem>)ViewBag.baseMonthSelectListItem,  // 選択オプション
+                                    selectOptionText,          // 空オプション
+                                    new { @id = key + "BaseMonth", name = item.BaseMonth, @class = "js_BaseMonth table select", @disabled = "disabled" } // その他の属性
+                                )
+                            }
+                            else
+                            {
+                                @Html.DropDownList(
+                                    key + "BaseMonth",          // プロパティ
+                                    (IEnumerable<SelectListItem>)ViewBag.baseMonthSelectListItem,  // 選択オプション
+                                    selectOptionText,          // 空オプション
+                                    new { @id = key + "BaseMonth", name = item.BaseMonth, @class = "js_BaseMonth table select" } // その他の属性
+                                )
+                            }
+                        </td>
+                        @foreach (SelectListItem selList in ReferenceDateList)
+                        {
+                            if (selList.Value.Equals(item.ReferenceDate))
+                            {
+                                selList.Selected = true;
+                            }
+                            else
+                            {
+                                selList.Selected = false;
+                            }
+                        }
+                        <td class="td-5 align-center inp-txt">
+                            @if (disabledReferenceDate)
+                            {
+                                @Html.DropDownList(
+                                    key + "ReferenceDate",          // プロパティ
+                                    (IEnumerable<SelectListItem>)ReferenceDateList,  // 選択オプション
+                                    selectOptionText,          // 空オプション
+                                    new { @id = key + "ReferenceDate", name = item.ReferenceDate, @class = "js_ReferenceDate table select", @disabled = "disabled" }  // その他の属性
+                                )
+                            }
+                            else
+                            {
+                                @Html.DropDownList(
+                                    key + "ReferenceDate",          // プロパティ
+                                    (IEnumerable<SelectListItem>)ReferenceDateList,  // 選択オプション
+                                    selectOptionText,          // 空オプション
+                                    new { @id = key + "ReferenceDate", name = item.ReferenceDate, @class = "js_ReferenceDate table select" }  // その他の属性
+                                )
+                            }
+                        </td>
+                    </tr>
+                }
+                @if (!string.IsNullOrEmpty(Model.BConditionList[0]) && Model.BReportMList.Count == 0)
+                {
+                    <tr class="datarow" name="list[0].Row">
+                        @Html.Hidden("list[0].ReportId", string.Empty)
+                        @Html.Hidden("list[0].DisplayNo", string.Empty)
+                        @Html.Hidden("list[0].InsUserId", string.Empty)
+                        @Html.Hidden("list[0].UpdDate", string.Empty)
+                        @Html.Hidden("list[0].No", 1, new { @class = "orderno" })
+                        <td class="td-2 number no"></td>
+                        <td class="td-1 align-center">@Html.CheckBox("list[0].DelFlg", false)</td>
+                        <td class="td-2"></td>
+                        <td class="td-3 align-center inp-txt">
+                            @Html.DropDownList(
+                                string.Empty,          // プロパティ
+                                (IEnumerable<SelectListItem>)ViewBag.locationMSelectListItem,  // 選択オプション
+                                selectOptionText,          // 空オプション
+                                new { id = "list[0].LocationId", @class = "table select" }  // その他の属性
+                            )
+                        </td>
+                        <td class="td-4 inp-txt">@Html.TextBox("list[0].ReportName", string.Empty, new { @class = "table-txt" })</td>
+                        <td class="td-5 align-center inp-txt">
+                            @Html.DropDownList(
+                                string.Empty,          // プロパティ
+                                (IEnumerable<SelectListItem>)ViewBag.reportTemplateMSelectListItem,  // 選択オプション
+                                selectOptionText,          // 空オプション
+                                new { id = "list[0].ReportTemplateId", @class = "table select" }  // その他の属性
+                            )
+                        </td>
+                        <td class="td-5 align-center inp-txt">
+                            @Html.DropDownList(
+                                string.Empty,          // プロパティ
+                                (IEnumerable<SelectListItem>)ViewBag.stampFieldSelectListItem,  // 選択オプション
+                                selectOptionText,          // 空オプション
+                                new { id = "list[0].StampField", @class = "table select" }  // その他の属性
+                            )
+                        </td>
+                        <td class="td-5 align-center inp-txt">
+                            @Html.DropDownList(
+                                string.Empty,          // プロパティ
+                                (IEnumerable<SelectListItem>)ViewBag.periodSelectListItem,  // 選択オプション
+                                selectOptionText,          // 空オプション
+                                new { id = "list[0].Period", @class = "js_Period table select", @onchange = "ChangePeriod(this)" }  // その他の属性
+                            )
+                        </td>
+                        <td class="td-5 align-center inp-txt">
+                            @Html.DropDownList(
+                                string.Empty,          // プロパティ
+                                (IEnumerable<SelectListItem>)ViewBag.baseMonthSelectListItem,  // 選択オプション
+                                selectOptionText,          // 空オプション
+                                new { id = "list[0].BaseMonth", @class = "js_BaseMonth table select", @Enabled = false }  // その他の属性
+                            )
+                        </td>
+                        <td class="td-5 align-center inp-txt">
+                            @Html.DropDownList(
+                                string.Empty,          // プロパティ
+                                (IEnumerable<SelectListItem>)ViewBag.referenceDateSelectListItemOneWeek,  // 選択オプション
+                                selectOptionText,          // 空オプション
+                                new { id = "list[0].ReferenceDate", @class = "js_ReferenceDate table select", @Enabled = false }  // その他の属性
+                            )
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <section id="btnarea">
+            <button type="button" name="addbtn" class="btn-add" onclick="add();" @ViewBag.editMode>追加</button>
+            <button type="button" name="registbtn" class="btn-register" onclick="regist();" @ViewBag.editMode>登録</button>
+        </section>
+    }
+
+
+</section>
+}

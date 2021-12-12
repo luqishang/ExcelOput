@@ -1,0 +1,129 @@
+﻿@model List<HACCPExtender.Models.Bussiness.BMachineM>
+
+@Styles.Render("~/Content/css/style.css")
+@Styles.Render("~/Content/css/machine.css")
+@Scripts.Render("~/Scripts/js/common.js")
+<script type="text/javascript">
+    $(function () {
+    })
+    function regist() {
+        $("#message-area").css('display', 'none');
+        if (!confirm("登録します。よろしいですか？")) {
+            $('form').off('submit');
+            return false;
+        }
+        $('.orderno').each(function (i) {
+            $(this).val(i);
+        });
+        $('form').attr('action', '@Url.Content("~/MachineM/Edit")');
+        $('form').submit();
+    }
+    function add() {
+        $('.orderno').each(function (i) {
+            $(this).val(i);
+        });
+        $('form').attr('action', '@Url.Content("~/MachineM/Add")');
+        $('form').submit();
+    }
+</script>
+
+
+<h1 class="page-title">機器マスタ</h1>
+@using (Html.BeginForm("Edit", "MachineM", new { }, FormMethod.Post, new { }))
+{
+    @Html.AntiForgeryToken()
+    <section id="">
+        @Html.ValidationSummary()
+        @{
+            var disp = "none";
+            if (!string.IsNullOrEmpty(ViewBag.registMsg))
+            {
+                disp = "block";
+            }
+        }
+        <div id="message-area" style="display: @disp">
+            <div class="regist-message" style="display: @disp">@ViewBag.registMsg</div>
+        </div>
+        <dev id="sortbtn-area">
+            <input type="button" id="" class="sotrbtn" value="▲" onclick="sortUp()">
+            <input type="button" id="" class="sotrbtn" value="▼" onclick="sortDown()">
+            <span class="">表示順序変更</span>
+        </dev>
+
+        <table id="tbl1" class="header_title">
+            <thead>
+                <tr class="datarow">
+                    <th class="th-1">No</th>
+                    <th class="th-2">削除</th>
+                    <th class="th-3">機器ID</th>
+                    <th class="th-4">機器名</th>
+                    <th class="th-5">使用中分類</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = 0; i < Model.Count; i++)
+                {
+                    var key = String.Format("list[{0}].", i);
+                    var item = Model[i];
+                    <tr class="datarow">
+                        @Html.Hidden(key + "MachineId", item.MachineId)
+                        @Html.Hidden(key + "DisplayNo", item.DisplayNo)
+                        @Html.Hidden(key + "InsUserId", item.InsUserId)
+                        @Html.Hidden(key + "UpdDate", item.UpdDate)
+                        @Html.Hidden(key + "No", item.No, new { @class = "orderno" })
+                        <td class="td-2 number no"></td>
+                        <td class="td-1 align-center">@Html.CheckBox(key + "DelFlg", item.DelFlg)</td>
+                        <td class="td-2">@item.MachineId</td>
+                        <td class="td-3 inp-txt">@Html.TextBox(key + "MachineName", item.MachineName, new { @class = "table-txt" })</td>
+                        @foreach (SelectListItem selList in ViewBag.locationMSelectListItem)
+                        {
+                            if (selList.Value.Equals(item.LocationId))
+                            {
+                                selList.Selected = true;
+                            }
+                            else
+                            {
+                                selList.Selected = false;
+                            }
+                        }
+                        <td class="td-4 align-center inp-txt">
+                            @Html.DropDownList(
+                                key + "LocationId",          // プロパティ
+                                (IEnumerable<SelectListItem>)ViewBag.locationMSelectListItem,  // 選択オプション
+                                " 選択してください ",          // 空オプション
+                                new { @id = key + "LocationId", name = item.LocationId, @class = "table select" }  // その他の属性
+                            )
+                        </td>
+                    </tr>
+                }
+                @if (Model.Count == 0)
+                {
+                    <tr class="datarow" name="list[0].Row">
+                        @Html.Hidden("list[0].MachineId", string.Empty)
+                        @Html.Hidden("list[0].DisplayNo", string.Empty)
+                        @Html.Hidden("list[0].InsUserId", string.Empty)
+                        @Html.Hidden("list[0].UpdDate", string.Empty)
+                        @Html.Hidden("list[0].No", 1, new { @class = "orderno" })
+                        <td class="td-2 number no"></td>
+                        <td class="td-1 align-center">@Html.CheckBox("list[0].DelFlg", false)</td>
+                        <td class="td-2"></td>
+                        <td class="td-3 inp-txt">@Html.TextBox("list[0].MachineName", string.Empty, new { @class = "table-txt" })</td>
+                        <td class="td-4 align-center inp-txt">
+                            @Html.DropDownList(
+                                "list[0].LocationId",          // プロパティ
+                                (IEnumerable<SelectListItem>)ViewBag.locationMSelectListItem,  // 選択オプション
+                                " 選択してください ",          // 空オプション
+                                new { id = "list[0].LocationId", @class = "table select" }  // その他の属性
+                            )
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <section id="btnarea">
+            <button type="button" name="addbtn" class="btn-add" onclick="add();" @ViewBag.editMode>追加</button>
+            <button type="button" name="registbtn" class="btn-register" onclick="regist();" @ViewBag.editMode>登録</button>
+        </section>
+    </section>
+}

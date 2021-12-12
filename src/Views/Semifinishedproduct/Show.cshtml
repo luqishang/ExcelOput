@@ -1,0 +1,189 @@
+﻿@model HACCPExtender.Models.Bussiness.BManagementMs
+
+@Styles.Render("~/Content/css/style.css")
+@Styles.Render("~/Content/css/semifinishedproduct.css")
+@Scripts.Render("~/Scripts/js/common.js")
+
+<script type="text/javascript">
+    $(function () {
+        $('.btn-close').on('click', function (event) {
+            $('#modal1').hide();
+        });
+    })
+    function regist() {
+        $("#message-area").css('display', 'none');
+        if (!confirm("登録します。よろしいですか？")) {
+            $('form').off('submit');
+            return false;
+        }
+        submitAfterSort('@Url.Content("~/Semifinishedproduct/Edit")');
+    }
+    function add() {
+        submitAfterSort('@Url.Content("~/Semifinishedproduct/Add")');
+    }
+    function fileSelect() {
+        $('input[name="filename"]').val('');
+        $('input[name="filename"]').attr('readonly', false);
+        $('input[name="filename"]').css('background-color', 'lemonchiffon');
+        $('#modal1').show();
+    }
+    function csvExpt() {
+        $("#message-area").css('display', 'none');
+        $('form').attr('action', '@Url.Content("~/Semifinishedproduct/CsvExport")');
+        $('form').submit();
+    }
+    function submitAfterSort(uri) {
+        $('.orderno').each(function (i) {
+            $(this).val(i);
+        });
+        $('form').attr('action', uri);
+        $('form').submit();
+    }
+    function fileUpload() {
+        $("#message-area").css('display', 'none');
+        if (!confirm("画面で編集中のデータは破棄されます。よろしいですか？")) {
+            return false;
+        }
+        $('form').attr('action', '@Url.Content("~/Semifinishedproduct/FileUpload")');
+        $('form').submit();
+    }
+</script>
+
+
+<h1 class="page-title">半製品マスタ</h1>
+@using (Html.BeginForm("Edit", "Semifinishedproduct", new { }, FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+<section id="">
+    @Html.ValidationSummary()
+    @{
+        var disp = "none";
+        if (!string.IsNullOrEmpty(ViewBag.registMsg))
+        {
+            disp = "block";
+        }
+    }
+    <div id="message-area" style="display: @disp">
+        <div class="regist-message" style="display: @disp">@ViewBag.registMsg</div>
+    </div>
+    <dev id="sortbtn-area">
+        <input type="button" id="" class="sotrbtn" value="▲" onclick="sortUp()">
+        <input type="button" id="" class="sotrbtn" value="▼" onclick="sortDown()">
+        <span class="">表示順序変更</span>
+    </dev>
+
+    <table id="tbl1" class="header_title">
+        <thead>
+            <tr id="csv-area">
+                <th class="" colspan="3" style="text-align: left;">CSV位置</th>
+                <th class="">@Html.TextBox("posList[0]", Model.BCsvPosList[0], new { @class = "txt txt-left" })</th>
+                <th class="">@Html.TextBox("posList[1]", Model.BCsvPosList[1], new { @class = "txt txt-left" })</th>
+                <th class="">@Html.TextBox("posList[2]", Model.BCsvPosList[2], new { @class = "txt txt-left" })</th>
+                <th class="">@Html.TextBox("posList[3]", Model.BCsvPosList[3], new { @class = "txt txt-left" })</th>
+                <th class="">@Html.TextBox("posList[4]", Model.BCsvPosList[4], new { @class = "txt txt-left" })</th>
+                <th class="">@Html.TextBox("posList[5]", Model.BCsvPosList[5], new { @class = "txt txt-left" })</th>
+            </tr>
+            <tr class="datarow">
+                <th class="th-1">No</th>
+                <th class="th-2">削除</th>
+                <th class="th-3">半製品ID</th>
+                <th class="th-4">半製品番号（文字列可）</th>
+                <th class="th-5">半製品名</th>
+                <th class="th-6">単位</th>
+                <th class="th-7">上限温度</th>
+                <th class="th-7">下限温度</th>
+                <th class="th-8">中分類名</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (var i = 0; i < Model.BManagementMList.Count; i++)
+            {
+                var key = String.Format("list[{0}].", i);
+                var item = Model.BManagementMList[i];
+                <tr class="datarow" name="@key + Row">
+                    @Html.Hidden(key + "ManageId", item.ManageId)
+                    @Html.Hidden(key + "DisplayNo", item.DisplayNo)
+                    @Html.Hidden(key + "InsUserId", item.InsUserId)
+                    @Html.Hidden(key + "UpdDate", item.UpdDate)
+                    @Html.Hidden(key + "No", item.No, new { @class = "orderno" })
+                    <td class="td-2 number no"></td>
+                    <td class="td-1 align-center">@Html.CheckBox(key + "DelFlg", item.DelFlg)</td>
+                    <td class="td-2">@item.ManageId</td>
+                    <td class="td-3 inp-txt">@Html.TextBox(key + "ManageNo", item.ManageNo, new { @class = "table-txt" })</td>
+                    <td class="td-4 inp-txt">@Html.TextBox(key + "ManageName", item.ManageName, new { @class = "table-txt" })</td>
+                    <td class="td-5 inp-txt">@Html.TextBox(key + "Unit", item.Unit, new { @class = "table-txt" })</td>
+                    <td class="td-6 inp-txt">@Html.TextBox(key + "UpperLimit", item.UpperLimit, new { @class = "table-txt number" })</td>
+                    <td class="td-7 inp-txt">@Html.TextBox(key + "LowerLimit", item.LowerLimit, new { @class = "table-txt number" })</td>
+@foreach (SelectListItem selList in ViewBag.locationMSelectListItem)
+{
+    if (selList.Value.Equals(item.LocationId))
+    {
+        selList.Selected = true;
+    } else
+    {
+        selList.Selected = false;
+    }
+}
+                    <td class="td-8 align-center inp-txt">
+                        @Html.DropDownList(
+                            key + "LocationId",          // プロパティ
+                            (IEnumerable<SelectListItem>)ViewBag.locationMSelectListItem,  // 選択オプション
+                            " 選択してください ",          // 空オプション
+                            new {@id = key + "LocationId", name = item.LocationId, @class = "table select" }  // その他の属性
+                        )
+                    </td>
+                </tr>
+            }
+            @if (Model.BManagementMList.Count == 0)
+            {
+                <tr class="datarow" name="list[0].Row">
+                    @Html.Hidden("list[0].ManageId", string.Empty)
+                    @Html.Hidden("list[0].DisplayNo", string.Empty)
+                    @Html.Hidden("list[0].InsUserId", string.Empty)
+                    @Html.Hidden("list[0].UpdDate", string.Empty)
+                    @Html.Hidden("list[0].No", 1, new { @class = "orderno" })
+                    <td class="td-2 number no"></td>
+                    <td class="td-1 align-center">@Html.CheckBox("list[0].DelFlg", false)</td>
+                    <td class="td-2"></td>
+                    <td class="td-3 inp-txt">@Html.TextBox("list[0].ManageNo", string.Empty, new { @class = "table-txt" })</td>
+                    <td class="td-4 inp-txt">@Html.TextBox("list[0].ManageName", string.Empty, new { @class = "table-txt" })</td>
+                    <td class="td-5 inp-txt">@Html.TextBox("list[0].Unit", string.Empty, new { @class = "table-txt" })</td>
+                    <td class="td-6 inp-txt">@Html.TextBox("list[0].UpperLimit", string.Empty, new { @class = "table-txt" })</td>
+                    <td class="td-7 inp-txt">@Html.TextBox("list[0].LowerLimit", string.Empty, new { @class = "table-txt" })</td>
+                    <td class="td-8 align-center inp-txt">
+                        @Html.DropDownList(
+                            string.Empty,          // プロパティ
+                            (IEnumerable<SelectListItem>)ViewBag.locationMSelectListItem,  // 選択オプション
+                            " 選択してください ",          // 空オプション
+                            new { id = "list[0].LocationId", @class = "table select" }  // その他の属性
+                        )
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <section id="btnarea">
+        <button type="button" name="addbtn" class="btn-add" onclick="add();" @ViewBag.editMode>追加</button>
+        <button type="button" name="registbtn" class="btn-register" onclick="regist();" @ViewBag.editMode>登録</button>
+        <button type="button" name="csvin" class="btn-csvimpt" onclick="fileSelect();" @ViewBag.editMode>CSV取込</button>
+        <button type="button" name="csvout" class="btn-csvout" onclick="csvExpt();" @ViewBag.editMode>データ出力</button>
+    </section>
+    <div id="modal1">
+        <div id="modal1_content">
+            <div id="category">
+                <span class="modal-title">半製品CSVアップロード</span>
+            </div>
+            <ul>
+                <li>@Html.TextBox("uploadFileList[0].UploadFile", Model.BUploadFileList[0].UploadFile, new { @type = "file" })</li>
+                <li>@Html.CheckBox("uploadFileList[0].HeadFlg", true) ヘッダ行あり</li>
+            </ul>
+            <div>
+                <ul class="modal-btn">
+                    <li><button type="button" class="btn-register btn-m" onclick="fileUpload();">アップロード</button></li>
+                    <li class="closed"><button type="button" class="btn-close">閉じる</button></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+}

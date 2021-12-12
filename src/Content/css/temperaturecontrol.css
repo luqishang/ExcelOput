@@ -1,0 +1,76 @@
+table {
+    /* width: 100%; */
+    border-collapse: separate;
+    border-spacing :  0;
+    font-size: 14px;
+}
+table th:last-child {
+    border-right: 1px solid #3c6690;
+}
+table th{
+    text-align: left;
+    color:white;
+    background: linear-gradient(#829ebc,#225588);
+    border-left: 1px solid #3c6690;
+    border-top: 1px solid #3c6690;
+    border-bottom: 1px solid #3c6690;
+    /* width: 25%; */
+    padding: 5px 10px;
+}
+table td{
+    text-align: left;
+    border-left: 1px solid #a8b7c5;
+    border-bottom: 1px solid #a8b7c5;
+    border-top:none;
+    /* width: 25%; */
+    padding: 5px 10px;
+    /* background-color: #ffffff; */
+  }
+table td:last-child{
+  border-right: 1px solid #a8b7c5;
+}
+#tbl1 {
+    margin-left: 20px;
+    background-color: #ffffff;
+}
+.td-1,.td-2 {
+    width: 30px;
+}
+.td-3 {
+    width: 170px;
+}
+.td-4 {
+    width: 250px;
+}
+.td-5, .td-6, .td-7 {
+    width: 80px;
+}
+.inp-txt {
+    padding: 0;
+    background-color: lemonchiffon;
+}
+.table-txt {
+    width: 100%;
+    height: 2em;
+    background-color: lemonchiffon;
+    border: none;
+}
+table select {
+    width: 170px;
+}
+#tbl1 #csv-area th {
+    background: linear-gradient(#e0ffff,#e0ffff);
+    border-left: none;
+    border-right: none;
+    border-top:none;
+    color: #000000;
+}
+#csv-area .txt {
+    height: 2em;
+    background-color: lemonchiffon;
+    /* border: none; */
+    width: 50px;
+}
+.txt-left {
+    text-align: right;
+}

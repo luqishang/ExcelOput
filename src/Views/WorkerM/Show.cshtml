@@ -1,0 +1,277 @@
+﻿@model HACCPExtender.Models.Bussiness.BWorkerMs
+
+@Styles.Render("~/Content/css/style.css")
+@Styles.Render("~/Content/css/worker.css")
+@Scripts.Render("~/Scripts/js/common.js")
+
+<script type="text/javascript">
+
+    $(function () {
+        var str = $('#blockType').val();
+        var res = str.split(',');
+        for (bumonno of res) {
+            $('.bumon_' + bumonno).hide();
+        }
+        adjust();
+        $(document).on('click', '.datarow', function () {
+            var no = $('.datarow').index(this);
+            if ((no < $('.datarow').length) && (no > 0)) {
+                $('.datarow').css("background-color", "#ffffff");
+                $('.datarow').attr("flag", "0");
+                var flag = $('.datarow').eq(no).attr("flag");
+                if (flag == "0") {
+                    $('.datarow').eq(no).css("background-color", "#6ac5f1");
+                    $('.datarow').eq(no).attr("flag", "1");
+                }
+            }
+        });
+        $('.btn-close').on('click', function (event) {
+            $('#modal1').hide();
+        });
+    })
+    function regist() {
+        $("#message-area").css('display', 'none');
+        if (!confirm("登録します。よろしいですか？")) {
+            $('form').off('submit');
+            return false;
+        }
+        submitAfterSort('@Url.Content("~/WorkerM/Edit")');
+    }
+    function add() {
+        submitAfterSort('@Url.Content("~/WorkerM/Add")');
+    }
+    function fileSelect() {
+        $('input[name="filename"]').val('');
+        $('input[name="filename"]').attr('readonly', false);
+        $('input[name="filename"]').css('background-color', 'lemonchiffon');
+        $('#modal1').show();
+    }
+    function submitAfterSort(uri) {
+        $('.orderno').each(function (i) {
+            $(this).val(i);
+        });
+        $('form').attr('action', uri);
+        $('form').submit();
+    }
+    function fileUpload() {
+        $("#message-area").css('display', 'none');
+        if (!confirm("画面で編集中のデータは破棄されます。よろしいですか？")) {
+            return false;
+        }
+        $('form').attr('action', '@Url.Content("~/WorkerM/FileUpload")');
+        $('form').submit();
+    }
+    function initComplete() {
+        $("#message-area").css('display', 'none');
+        if (!confirm("初期設定を終了します。\n画面の編集中のデータは破棄されますがよろしいですか？")) {
+            return false;
+        }
+        $('form').attr('action', '@Url.Content("~/WorkerM/InitComplete")');
+        $('form').submit();
+    }
+</script>
+
+@{
+    if ("3".Equals(Session["DISPMODE"]))
+    {
+        <h1 id="img-title">初期設定</h1>
+        <img src="@Url.Content("~/Content/images/workM.png")" id="first-map" />
+        <div><button type="button" name="initcmp" class="btn-manager" onclick="initComplete();" @ViewBag.editMode>初期設定完了</button></div>
+    }
+}
+<h1 class="page-title">作業者マスタ</h1>
+@using (Html.BeginForm("Edit", "Worker", new { }, FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+    <section id="">
+        @Html.ValidationSummary()
+        @{
+            var disp = "none";
+            if (!string.IsNullOrEmpty(ViewBag.registMsg))
+            {
+                disp = "block";
+            }
+        }
+        <div id="message-area" style="display: @disp">
+            <div class="regist-message" style="display: @disp">@ViewBag.registMsg</div>
+        </div>
+        <dev id="sortbtn-area">
+            <input type="button" id="" class="sotrbtn" value="▲" onclick="sortUp()">
+            <input type="button" id="" class="sotrbtn" value="▼" onclick="sortDown()">
+            <span class="">表示順序変更</span>
+        </dev>
+        @{
+            var hidden_bumon = "";
+            for (var i = 0; i < ViewBag.categoryNameList.Length; i++)
+            {
+                if (string.IsNullOrEmpty(ViewBag.categoryNameList[i]))
+                {
+                    if (!string.IsNullOrEmpty(hidden_bumon))
+                    {
+                        hidden_bumon += ",";
+                    }
+                    hidden_bumon += (i + 1).ToString();
+                }
+            }
+        }
+        <input type="hidden" id="blockType" value="@hidden_bumon">
+
+        <table id="tbl1">
+            <thead>
+                <tr id="csv-area">
+                    <th class="" colspan="3">CSV位置</th>
+                    <th class="">@Html.TextBox("posList[0]", Model.BCsvPosList[0], new { @class = "txt txt-left" })</th>
+                    @if ("0".Equals(Session["DISPMODE"]))
+                    {
+                        <th class="" colspan="16">　</th>
+                    }
+                    else
+                    {
+                        <th class="" colspan="18">　</th>
+                    }
+                </tr>
+                <tr class="datarow">
+                    <th class="th-1">No</th>
+                    <th class="th-2">削除</th>
+                    <th class="th-3">作業者ID</th>
+                    <th class="th-4">作業者名</th>
+                    <th class="th-5">管理者</th>
+                    <th class="th-6 bumon_1"><span class="head-bumon">部門1</span><br>@ViewBag.categoryNameList[0]</th>
+                    <th class="th-6 bumon_2"><span class="head-bumon">部門2</span><br>@ViewBag.categoryNameList[1]</th>
+                    <th class="th-6 bumon_3"><span class="head-bumon">部門3</span><br>@ViewBag.categoryNameList[2]</th>
+                    <th class="th-6 bumon_4"><span class="head-bumon">部門4</span><br>@ViewBag.categoryNameList[3]</th>
+                    <th class="th-6 bumon_5"><span class="head-bumon">部門5</span><br>@ViewBag.categoryNameList[4]</th>
+                    <th class="th-6 bumon_6"><span class="head-bumon">部門6</span><br>@ViewBag.categoryNameList[5]</th>
+                    <th class="th-6 bumon_7"><span class="head-bumon">部門7</span><br>@ViewBag.categoryNameList[6]</th>
+                    <th class="th-6 bumon_8"><span class="head-bumon">部門8</span><br>@ViewBag.categoryNameList[7]</th>
+                    <th class="th-6 bumon_9"><span class="head-bumon">部門9</span><br>@ViewBag.categoryNameList[8]</th>
+                    <th class="th-6 bumon_10"><span class="head-bumon">部門10</span><br>@ViewBag.categoryNameList[9]</th>
+                    @if (!"0".Equals(Session["DISPMODE"]))
+                    {
+                        <th class="th-7">管理者ID</th>
+                        <th class="th-7">管理者パスワード</th>
+                    }
+                    <th class="th-8">メールアドレス（PC）</th>
+                    <th class="th-8">メールアドレス（携帯）</th>
+                    <th class="th-9">メール送信時刻<br>（自）</th>
+                    <th class="th-9">メール送信時刻<br>（至）</th>
+                    <th class="th-10">表示対象外</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = 0; i < Model.BWorkerMList.Count; i++)
+                {
+                    var key = String.Format("list[{0}].", i);
+                    var item = Model.BWorkerMList[i];
+                    <tr class="datarow" name="@key + Row">
+                        @Html.Hidden(key + "WorkerId", item.WorkerId)
+                        @Html.Hidden(key + "DisplayNo", item.DisplayNo)
+                        @Html.Hidden(key + "InsUserId", item.InsUserId)
+                        @Html.Hidden(key + "UpdDate", item.UpdDate)
+                        @Html.Hidden(key + "No", item.No, new { @class = "orderno" })
+                        <td class="td-1 number no"></td>
+                        <td class="chk">@Html.CheckBox(key + "DelFlg", item.DelFlg)</td>
+                        <td class="moji">@item.WorkerId</td>
+                        <td class="inp-txt">@Html.TextBox(key + "WorkerName", item.WorkerName, new { @class = "table-txt" })</td>
+                        <td class="chk">@Html.CheckBox(key + "ManagerKbn", item.ManagerKbn)</td>
+                        <td class="bumon_1 chk">@Html.CheckBox(key + "CategoryKbn1", item.CategoryKbn1)</td>
+                        <td class="bumon_2 chk">@Html.CheckBox(key + "CategoryKbn2", item.CategoryKbn2)</td>
+                        <td class="bumon_3 chk">@Html.CheckBox(key + "CategoryKbn3", item.CategoryKbn3)</td>
+                        <td class="bumon_4 chk">@Html.CheckBox(key + "CategoryKbn4", item.CategoryKbn4)</td>
+                        <td class="bumon_5 chk">@Html.CheckBox(key + "CategoryKbn5", item.CategoryKbn5)</td>
+                        <td class="bumon_6 chk">@Html.CheckBox(key + "CategoryKbn6", item.CategoryKbn6)</td>
+                        <td class="bumon_7 chk">@Html.CheckBox(key + "CategoryKbn7", item.CategoryKbn7)</td>
+                        <td class="bumon_8 chk">@Html.CheckBox(key + "CategoryKbn8", item.CategoryKbn8)</td>
+                        <td class="bumon_9 chk">@Html.CheckBox(key + "CategoryKbn9", item.CategoryKbn9)</td>
+                        <td class="bumon_10 chk">@Html.CheckBox(key + "CategoryKbn10", item.CategoryKbn10)</td>
+                        @if (!"0".Equals(Session["DISPMODE"]))
+                        {
+                            <td class="inp-txt">@Html.TextBox(key + "AppId", item.AppId, new { @class = "table-txt" })</td>
+                            <td class="inp-txt">@Html.TextBox(key + "AppPass", item.AppPass, new { @class = "table-txt" })</td>
+                        }
+                        <td class="inp-txt">@Html.TextBox(key + "MailAddressPc", item.MailAddressPc, new { @class = "table-txt" })</td>
+                        <td class="inp-txt">@Html.TextBox(key + "MailAddressFeature", item.MailAddressFeature, new { @class = "table-txt" })</td>
+                        <td class="inp-txt">
+                            @if (item.TransMissionTime1Flg)
+                            {
+                                <input type="time" name=@(key + "TransMissionTime1") value="@item.TransMissionTime1" class="input-validation-error table-txt" />
+                            }
+                            else
+                            {
+                                <input type="time" name=@(key + "TransMissionTime1") value="@item.TransMissionTime1" class="table-txt" />
+                            }
+                        </td>
+                        <td class="inp-txt">
+                            @if (item.TransMissionTime2Flg)
+                            {
+                                <input type="time" name=@(key + "TransMissionTime2") value="@item.TransMissionTime2" class="input-validation-error table-txt" />
+                            }
+                            else
+                            {
+                                <input type="time" name=@(key + "TransMissionTime2") value="@item.TransMissionTime2" class="table-txt" />
+                            }
+                        </td>
+                        <td class="chk">@Html.CheckBox(key + "NoDisplayKbn", item.NoDisplayKbn)</td>
+                    </tr>
+                }
+                @if (Model.BWorkerMList.Count == 0)
+                {
+                    <tr class="datarow" name="list[0].Row">
+                        @Html.Hidden("list[0].WorkerId", string.Empty)
+                        @Html.Hidden("list[0].DisplayNo", string.Empty)
+                        @Html.Hidden("list[0].InsUserId", string.Empty)
+                        @Html.Hidden("list[0].UpdDate", string.Empty)
+                        @Html.Hidden("list[0].No", 1, new { @class = "orderno" })
+                        <td class="td-1 number no"></td>
+                        <td class="chk">@Html.CheckBox("list[0].DelFlg", false)</td>
+                        <td class="moji"></td>
+                        <td class="inp-txt">@Html.TextBox("list[0].WorkerName", string.Empty, new { @class = "table-txt" })</td>
+                        <td class="chk">@Html.CheckBox("list[0].ManagerKbn", string.Empty)</td>
+                        <td class="bumon_1 chk">@Html.CheckBox("list[0].CategoryKbn1", string.Empty)</td>
+                        <td class="bumon_2 chk">@Html.CheckBox("list[0].CategoryKbn2", string.Empty)</td>
+                        <td class="bumon_3 chk">@Html.CheckBox("list[0].CategoryKbn3", string.Empty)</td>
+                        <td class="bumon_4 chk">@Html.CheckBox("list[0].CategoryKbn4", string.Empty)</td>
+                        <td class="bumon_5 chk">@Html.CheckBox("list[0].CategoryKbn5", string.Empty)</td>
+                        <td class="bumon_6 chk">@Html.CheckBox("list[0].CategoryKbn6", string.Empty)</td>
+                        <td class="bumon_7 chk">@Html.CheckBox("list[0].CategoryKbn7", string.Empty)</td>
+                        <td class="bumon_8 chk">@Html.CheckBox("list[0].CategoryKbn8", string.Empty)</td>
+                        <td class="bumon_9 chk">@Html.CheckBox("list[0].CategoryKbn9", string.Empty)</td>
+                        <td class="bumon_10 chk">@Html.CheckBox("list[0].CategoryKbn10", string.Empty)</td>
+                        @if (!"0".Equals(Session["DISPMODE"]))
+                        {
+                            <td class="inp-txt">@Html.TextBox("list[0].AppId", string.Empty, new { @class = "table-txt" })</td>
+                            <td class="inp-txt">@Html.TextBox("list[0].AppPass", string.Empty, new { @class = "table-txt" })</td>
+                        }
+                        <td class="inp-txt">@Html.TextBox("list[0].MailAddressPc", string.Empty, new { @class = "table-txt" })</td>
+                        <td class="inp-txt">@Html.TextBox("list[0].MailAddressFeature", string.Empty, new { @class = "table-txt" })</td>
+                        <td class="inp-txt"><input type="time" name="list[0].TransMissionTime1" value="" class="table-txt" /></td>
+                        <td class="inp-txt"><input type="time" name="list[0].TransMissionTime2" value="" class="table-txt" /></td>
+                        <td class="chk">@Html.CheckBox("list[0].NoDisplayKbn", string.Empty)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <section id="btnarea">
+            <button type="button" name="addbtn" class="btn-add" onclick="add();" @ViewBag.editMode>追加</button>
+            <button type="button" name="registbtn" class="btn-register" onclick="regist();" @ViewBag.editMode>登録</button>
+            <button type="button" name="csvin" class="btn-csvimpt" onclick="fileSelect();" @ViewBag.editMode>CSV取込</button>
+        </section>
+        <div id="modal1">
+            <div id="modal1_content">
+                <div id="category">
+                    <span class="modal-title">作業者CSVアップロード</span>
+                </div>
+                <ul>
+                    <li>@Html.TextBox("uploadFileList[0].UploadFile", Model.BUploadFileList[0].UploadFile, new { @type = "file" })</li>
+                    <li>@Html.CheckBox("uploadFileList[0].HeadFlg", true) ヘッダ行あり</li>
+                </ul>
+                <div>
+                    <ul class="modal-btn">
+                        <li><button type="button" class="btn-register btn-m" onclick="fileUpload();">アップロード</button></li>
+                        <li class="closed"><button type="button" class="btn-close">閉じる</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+}

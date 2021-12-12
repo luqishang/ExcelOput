@@ -1,0 +1,113 @@
+table {
+    width: 350px;
+    border-collapse: separate;
+    border-spacing :  0;
+    font-size: 14px;
+}
+table th:last-child {
+    border-right: 1px solid #3c6690;
+}
+table th{
+    text-align: left;
+    color:white;
+    background: linear-gradient(#829ebc,#225588);
+    border-left: 1px solid #3c6690;
+    border-top: 1px solid #3c6690;
+    border-bottom: 1px solid #3c6690;
+    padding: 5px 10px;
+}
+table td{
+    text-align: left;
+    border-left: 1px solid #a8b7c5;
+    border-bottom: 1px solid #a8b7c5;
+    border-top:none;
+    padding: 5px 10px;
+    /* background-color: #ffffff; */
+  }
+table td:last-child{
+  border-right: 1px solid #a8b7c5;
+}
+#tbl1, #tbl2,#tbl3 {
+    margin-left: 20px;
+    background-color: #ffffff;
+    margin-top: 30px;
+}
+.th-1 {
+    width: 40px;
+}
+.th-2 {
+    width: 40px;
+}
+.th-3 {
+    width: 150px;
+}
+
+.inp-txt {
+    padding: 0;
+    background-color: lemonchiffon;
+}
+.table-txt {
+    width: 100%;
+    height: 2em;
+    background-color: lemonchiffon;
+    border: none;
+}
+#table-content {
+    width: max-content;
+}
+#tbl1 #csv-area th {
+    background: linear-gradient(#e0ffff,#e0ffff);
+    border-left: none;
+    border-right: none;
+    border-top:none;
+    color: #000000;
+}
+#csv-area .txt {
+    height: 2em;
+    background-color: lemonchiffon;
+    /* border: none; */
+    width: 50px;
+}
+.unvisible {
+    background-color: gray;
+}
+.txt-left {
+    text-align: right;
+}
+.category ul li{
+    display: inline;
+}
+.category ul{
+    margin-left: 0;
+    padding-left: 20px;
+}
+.category li{
+    margin-right: 15px;
+}
+.midashi {
+    font-size: 17px;
+    font-weight: bold;
+}
+.category-title {
+    margin-left: 20px;
+    margin-top: 0;
+    margin-bottom: 5px;
+    padding-top: 0;
+    padding-bottom: 0;
+    font-size: 17px;
+}
+.selectType1 {
+    width: 200px;
+    height: 20px;
+}
+.btn-register {
+    margin-left: 20px;
+}
+#btnarea {
+    margin-left: 20px;
+}
+.btn-turnback {
+    background-color: midnightblue;
+    border: midnightblue 1px solid;
+    margin-left: 50px;
+}

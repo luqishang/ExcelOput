@@ -1,0 +1,121 @@
+﻿@model HACCPExtender.Models.Bussiness.BIndustrySelect
+
+@Styles.Render("~/Content/css/style.css")
+@Styles.Render("~/Content/css/IndustrySelect.css")
+@Scripts.Render("~/Scripts/js/common.js")
+
+<script type="text/javascript">
+    $(function () {
+        $('#tempo').css('display', 'none');
+        $('#gyoshu').css('display', 'none');
+
+        var mode = $('#SelectMode').val();
+        if (mode == '0') {
+            $('#tempo').css('display', 'block');
+        } else {
+            $('#gyoshu').css('display', 'block');
+        }
+    })
+    function ChangeCategory(val) {
+        $('form').attr('action', '@Url.Content("~/IndustrySelection/CategoryChange")');
+        $('form').submit();
+    }
+    function registIndustry() {
+        var mode = $('#SelectMode').val();
+
+        if (mode == '0') {
+            if ($('tr[flag="1"]').length > 0) {
+                $('#sel_ShopId').val($('tr[flag="1"]').children('input[name$=ShopId]').val());
+            }
+        } else {
+            if ($('tr[flag="1"]').length > 0) {
+                $('#sel_IndustryId').val($('tr[flag="1"]').children('input[name$=IndustryId]').val());
+            }
+        }
+
+        $('form').attr('action', '@Url.Content("~/IndustrySelection/Decision")');
+        $('form').submit();
+    }
+</script>
+<h1 id="img-title">初期設定</h1>
+<img src="@Url.Content("~/Content/images/industry.png")" id="first-map" />
+
+<h1 class="page-title">業務設定</h1>
+@using (Html.BeginForm("Edit", "IndustrySelection", new { }, FormMethod.Post, new { }))
+{
+    @Html.AntiForgeryToken()
+    <section id="">
+        @Html.ValidationSummary()
+        <div class="subTitle">
+            <h2>タブレットで表示するフォーマットを登録します。<br>業種または店舗を選択してください。</h2>
+            @if (Model.DropDownFlg)
+            {
+                @Html.DropDownList("SelectMode", (IEnumerable<SelectListItem>)ViewBag.SelectDrop, null, new { @class = "selectType1 input-area1", @onchange = "ChangeCategory(this.value)" })
+            } else
+            {
+                @Html.Hidden("SelectMode", "1");
+            }
+            @Html.Hidden("DropDownFlg", @Model.DropDownFlg)
+        </div>
+        @Html.Hidden("sel_ShopId", string.Empty)
+        @Html.Hidden("sel_IndustryId", string.Empty)
+
+        <div id="tempo" style="display:none">
+            @if (ViewBag.mode == "0")
+            {
+                <table id="tbl1" class="header_title">
+                    <thead>
+                        <tr class="datarow">
+                            <th class="th-1">No</th>
+                            <th class="th-2">店舗名</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.AffiliateStoresList.Count; i++)
+                        {
+                            var key = String.Format("list[{0}].", i);
+                            var item = Model.AffiliateStoresList[i];
+
+                            <tr class="datarow">
+                                @Html.Hidden(key + "ShopId", item.ShopId)
+                                <td class="td-1 number no"></td>
+                                <td class="td-2">@item.ShopName</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+
+        <div id="gyoshu" style="display:none">
+            @if (ViewBag.mode == "1")
+            {
+                <table id="tbl2" class="header_title">
+                    <thead>
+                        <tr class="datarow">
+                            <th class="th-1">No</th>
+                            <th class="th-2">業種名</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.IndustryList.Count; i++)
+                        {
+                            var key = String.Format("list2[{0}].", i);
+                            var item = Model.IndustryList[i];
+
+                            <tr class="datarow">
+                                @Html.Hidden(key + "IndustryId", item.IndustryId)
+                                <td class="td-1 number no"></td>
+                                <td class="td-2">@item.IndustryName</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+
+        <section id="btnarea">
+            <button type="button" id="registbtn" name="regist" class="btn-register" onclick="registIndustry()">登録</button>
+        </section>
+    </section>
+}

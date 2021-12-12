@@ -1,0 +1,16 @@
+﻿
+@Styles.Render("~/Content/css/style.css")
+@Scripts.Render("~/Scripts/js/common.js")
+
+@* メニューの自動表示 *@
+<script type="text/javascript">
+    $(document).ready(function () {
+        document.getElementById("sidebar").style.width = "150px";
+        document.getElementById("sidebar").style.visibility = "visible";
+        document.getElementById("main-content").style.marginLeft = "150px";
+    });
+</script>
+
+<h1 class="page-title">メニューから選択してください</h1>
+
+

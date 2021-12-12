@@ -1,0 +1,140 @@
+﻿
+@model HACCPExtender.Models.Bussiness.BTop
+
+@Styles.Render("~/Content/css/style.css")
+@Styles.Render("~/Content/css/top.css")
+@Scripts.Render("~/Scripts/js/common.js")
+<script type="text/javascript">
+    $(function () {
+        adjust();
+    })
+    function data_approval(level, categoryId, locationId, reportId, period, startDate) {
+        $('#sel_CategoryId').val(categoryId);
+        $('#sel_LocationId').val(locationId);
+        $('#sel_ReportId').val(reportId);
+        $('#sel_Period').val(period);
+        $('#sel_StartDate').val(startDate);
+        $('#sel_Bunrui').val(level);
+
+        $('form').attr('action', '@Url.Content("~/Top/Approval")');
+        $('form').submit();
+    }
+    function data_history(categoryId, locationId, reportId, startDate) {
+        $('#sel_CategoryId').val(categoryId);
+        $('#sel_LocationId').val(locationId);
+        $('#sel_ReportId').val(reportId);
+        $('#sel_StartDate').val(startDate);
+
+        $('form').attr('action', '@Url.Content("~/Top/DataHistory")');
+        $('form').submit();
+    }
+</script>
+
+@Html.AntiForgeryToken()
+<section id="">
+    <h1 class="subtitle">お知らせ</h1>
+    @if (Model.BnotificList.Count() > 0)
+    {
+        <div class="infomation">
+            <table id="tbl1">
+                <tbody>
+                    @for (var i = 0; i < Model.BnotificList.Count; i++)
+                    {
+                        var key = String.Format("list[{0}].", i);
+                        var item = Model.BnotificList[i];
+                        <tr>
+                            <td class="td-1 align-center">@item.STARTDATE</td>
+                            <td class="td-2">@item.NOTICECONTENT</td>
+                        </tr>
+                    }
+                    @if (Model.BnotificList.Count() < 6)
+                    {
+                        for (var i = Model.BnotificList.Count; i < 6; i++)
+                        {
+                            <tr>
+                                <td class="td-1 align-center">　</td>
+                                <td class="td-2">　</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div id="msg-nodata">
+            <span class="no-massg">只今、お知らせメッセージはありません。</span>
+        </div>
+    }
+</section>
+
+<section id="">
+    <h1 class="subtitle2">承認待ち情報</h1>
+    @if (Model.HistorucalData)
+    {
+        <div class="archivejh">
+            <a href="~/PendingApproval/Show">過去の承認待ちデータがあります。こちらからご確認ください。</a>
+        </div>
+    }
+
+    @using (Html.BeginForm("Edit", "Top", new { }, FormMethod.Post, new { }))
+    {
+        @Html.AntiForgeryToken()
+
+        @Html.Hidden("sel_CategoryId", string.Empty)
+        @Html.Hidden("sel_LocationId", string.Empty)
+        @Html.Hidden("sel_ReportId", string.Empty)
+        @Html.Hidden("sel_Period", string.Empty)
+        @Html.Hidden("sel_StartDate", string.Empty)
+        @Html.Hidden("sel_Bunrui", string.Empty)
+
+        <div class="shoninjh">
+            @for (var i = 0; i < Model.ApprovalDataList.Count; i++)
+            {
+                var item = Model.ApprovalDataList[i];
+
+                <div class="bumonblock">
+                    <span class="subtitle">大分類：　@item.CategoryName</span>
+                    <table id="tbl2">
+                        <thead>
+                            <tr>
+                                <th class="th-1">中分類</th>
+                                <th class="th-2">帳票名</th>
+                                <th class="th-3">周期</th>
+                                <th class="th-4">データ記録件数</th>
+                                <th class="th-5">承認待ちノード</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (var j = 0; j < item.BApprovalList.Count; j++)
+                            {
+                                var detail = item.BApprovalList[j];
+                                <tr>
+                                    <td class="td-1 align-left">@detail.LOCATIONNAME</td>
+                                    <td class="td-2 align-left">@detail.REPORTNAME</td>
+                                    <td class="td-3 align-left">@detail.PERIODWORD</td>
+                                    <td class="td-4 align-right">
+                                        <a href="javascript:data_history('@detail.CATEGORYID', '@detail.LOCATIONID', '@detail.REPORTID', '@detail.PERIODSTART');" class="unker">@(detail.CNT + "件")</a>
+                                    </td>
+                                    <td class="td-5 align-left">
+                                        <a href="javascript:data_approval('@detail.APPROVALNODE', '@detail.CATEGORYID', '@detail.LOCATIONID', '@detail.REPORTID', '@detail.PERIOD', '@detail.PERIODSTART');" class="unker">
+                                            @detail.APPROVALNODEDISP
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            @if (Model.ApprovalDataList.Count() == 0)
+            {
+                <div id="msg-nodata">
+                    <span>本日の承認待ちデータはありません。</span>
+                </div>
+            }
+        </div>
+    }
+</section>
+

@@ -1,0 +1,149 @@
+﻿
+@model HACCPExtender.Models.Bussiness.BDataHistory
+
+@Styles.Render("~/Content/css/style.css")
+@Styles.Render("~/Content/css/datahistory.css")
+@Scripts.Render("~/Scripts/js/common.js")
+@{
+    Layout = null;
+}
+
+<h1 class="page-title">データ履歴</h1>
+@using (Html.BeginForm("Edit", "DataHistory", new { }, FormMethod.Post, new { }))
+{
+    @Html.AntiForgeryToken()
+    <section id="">
+        @Html.ValidationSummary()
+        @{
+            var disp = "none";
+            if (!string.IsNullOrEmpty(ViewBag.registMsg))
+            {
+                disp = "block";
+            }
+        }
+        <div id="message-area" style="display: @disp">
+            <div class="regist-message" style="display: @disp">@Html.Raw(Html.Encode(ViewBag.registMsg).Replace("\n", "<br />"))</div>
+        </div>
+         <dev class="category" id="recorddate-area">
+            <ul>
+                @if (!string.IsNullOrEmpty(Model.PeriodStartDate) || !string.IsNullOrEmpty(Model.PeriodEndDate))
+                {
+                    <li class="period">データ記録範囲： @Model.PeriodStartDate ～ @Model.PeriodEndDate</li>
+                }
+            </ul>
+        </dev>
+
+        <div class="result">
+            @if (Model.TemperatureControlDatas != null && Model.TemperatureControlDatas.Count() > 0)
+            {
+                var header = Model.TemperatureControlDatas[0][0].HeaderDic;
+                <table id="tbl2" class="header_title">
+                    <thead>
+                        <tr>
+                            <th class="th-1">データ記録日時</th>
+                            @for (var k = 0; k < Model.TemperatureControlDatas.Count; k++)
+                            {
+                                var item = Model.TemperatureControlDatas[k];
+                                for (var i = 0; i < item.Count; i++)
+                                {
+                                    var result = item[i];
+                                    var answer = result.AnserDic;
+                                    var attachFlg = result.AttachDic;
+                                    <td class="td-1">@result.DataYMD</td>
+                                }
+                            }
+                        </tr>
+                        <tr>
+                            <th class="th-2">作業者</th>
+                            @for (var k = 0; k < Model.TemperatureControlDatas.Count; k++)
+                            {
+                                var item = Model.TemperatureControlDatas[k];
+                                for (var i = 0; i < item.Count; i++)
+                                {
+                                    var result = item[i];
+                                    var answer = result.AnserDic;
+                                    var attachFlg = result.AttachDic;
+                                    <td class="td-2">@result.WorkerName</td>
+                                }
+                            }
+                        </tr>
+                        @foreach (KeyValuePair<int, string> kvp in header)
+                        {
+                            <tr>
+                                <th class="th-3">@kvp.Value</th>
+                                @for (var k = 0; k < Model.TemperatureControlDatas.Count; k++)
+                                {
+                                    var item = Model.TemperatureControlDatas[k];
+                                    for (var i = 0; i < item.Count; i++)
+                                    {
+                                        var result = item[i];
+                                        var answer = result.AnserDic;
+                                        var attachFlg = result.AttachDic;
+                                        if (attachFlg[kvp.Key])
+                                        {
+                                            <td class="td-3 ">
+                                                <a href="~/@answer[kvp.Key]" target="_blank">画像</a>
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td class="td-3 ">@answer[kvp.Key]</td>
+                                        }
+                                    }
+                                }
+                            </tr>
+                        }
+                    </thead>
+                </table>
+
+                <div class="rireki-title">承認履歴（大分類承認・施設承認）</div>
+                <table id="tbl2">
+                    <thead>
+                        <tr>
+                            <th class="th-1">承認ノード</th>
+                            <th class="th-2">処理日時</th>
+                            <th class="th-3">コメント</th>
+                            <th class="th-4">ステータス</th>
+                            <th class="th-5">承認者</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.Historys.Count; i++)
+                        {
+                            var key = String.Format("list[{0}].", i);
+                            var item = Model.Historys[i];
+                            <tr>
+                                <td class="td-1">@item.APPROVALNODE</td>
+                                <td class="td-2">@item.APPROVALDATE</td>
+                                <td class="td-3">@item.APPROVALCOMMENT</td>
+                                @if ("0".Equals(item.STATUS))
+                                {
+                                    <td class="td-4">承認待ち</td>
+                                }
+                                else if ("1".Equals(item.STATUS))
+                                {
+                                    <td class="td-4">承認済</td>
+                                }
+                                else
+                                {
+                                    <td class="td-4">差戻し</td>
+                                }
+                                <td class="td-5">@item.APPROVALUSERNAME</td>
+                            </tr>
+                        }
+                        @if (Model.Historys.Count() == 0)
+                        {
+                            <tr>
+                                <td class="td-1" colspan="5">データがありません</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="nodata">@ViewBag.noDateMsg</div>
+            }
+        </div>
+    </section>
+}

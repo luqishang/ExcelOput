@@ -1,0 +1,113 @@
+﻿@model List<HACCPExtender.Models.Bussiness.BApprovaler>
+
+@Styles.Render("~/Content/css/style.css")
+@Styles.Render("~/Content/css/approvaler.css")
+@Scripts.Render("~/Scripts/js/common.js")
+
+
+<script type="text/javascript">
+    function add() {
+        $('form').attr('action', '@Url.Content("~/Approvaler/Add")');
+        $('form').submit();
+    }
+    function regist() {
+        $('form').attr('action', '@Url.Content("~/Approvaler/Edit")');
+        $('form').submit();
+    }
+    function turnback() {
+        $('form').attr('action', '@Url.Content("~/ApprovalRoute/BackShow")');
+        $('form').submit();
+    }
+
+</script>
+
+<h1 class="page-title">@ViewBag.approvalerTitle</h1>
+@using (Html.BeginForm("Edit", "Approvaler", new { }, FormMethod.Post, new { }))
+{
+    @Html.AntiForgeryToken()
+    <section id="">
+        @Html.ValidationSummary()
+        @{
+            var disp = "none";
+            if (!string.IsNullOrEmpty(ViewBag.registMsg))
+            {
+                disp = "block";
+            }
+        }
+        <div id="message-area" style="display: @disp">
+            <div class="regist-message" style="display: @disp">@ViewBag.registMsg</div>
+        </div>
+
+        @if (ViewBag.mode == "middle")
+        {
+            <section id="table-content">
+                <div class="category">
+                    <ul>
+                        <li><span class="midashi">大分類</span></li>
+                        <li>@ViewBag.categoryName</li>
+                    </ul>
+                    <ul>
+                        <li><span class="midashi">中分類</span></li>
+                        <li>@ViewBag.locationName</li>
+                    </ul>
+                </div>
+            </section>    
+        }
+        @if (ViewBag.mode == "major")
+        {
+            <section id="table-content">
+                <div class="category">
+                    <ul>
+                        <li><span class="midashi">大分類</span></li>
+                        <li>@ViewBag.categoryName</li>
+                    </ul>
+                </div>
+            </section>    
+        }
+        <input type="hidden" id="approvalCategory" name="approvalCategory" value="@ViewBag.approvalCategory">
+        <input type="hidden" id="categoryId" name="categoryId" value="@ViewBag.categoryId">
+        <input type="hidden" id="locationId" name="locationId" value="@ViewBag.locationId">
+
+        <table id="tbl1" class="header_title">
+            <thead>
+                <tr class="datarow">
+                    <th class="th-1">No</th>
+                    <th class="th-2">削除</th>
+                    <th class="th-3">承認者名</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = 0; i < Model.Count; i++)
+                {
+                    var key = String.Format("list[{0}].", i);
+                    var item = Model[i];
+
+                    <tr class="datarow">
+                        @Html.Hidden(key + "ApprovalNodeId", item.ApprovalNodeId)
+                        @Html.Hidden(key + "ApprovalManagerId", item.ApprovalManagerId)
+                        @Html.Hidden(key + "InsUertId", item.InsUertId)
+                        @Html.Hidden(key + "UpdUserId", item.UpdUserId)
+                        @Html.Hidden(key + "Update", item.Update)
+                        <td class="td-2 number no"></td>
+                        <td class="td-1 chk">@Html.CheckBox(key + "DelFlg", item.DelFlg)</td>
+                        <td class="td-4">
+                            @Html.DropDownList(key + "ManagerDrop", (IEnumerable<SelectListItem>)item.ManagerDropList, "選択してください", new { @class = "selectType1 input-area1" })
+                        </td>
+                    </tr>
+                }
+                @if (Model.Count == 0)
+                {
+                    <tr class="datarow">
+                        <td class="td-2 " colspan=3>データが登録されていません</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <section id="btnarea">
+            <button type="button" name="add-btn" class="btn-add" onclick="add()" @ViewBag.editMode>追加</button>
+            <button type="button" name="regist-btn" class="btn-register" onclick="regist()" @ViewBag.editMode>登録</button>
+            <button type="button" name="turnback-btn" class="btn-turnback" onclick="turnback()">戻る</button>
+        </section>
+    </section>
+}

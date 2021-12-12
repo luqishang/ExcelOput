@@ -1,0 +1,168 @@
+﻿@model HACCPExtender.Models.Bussiness.PendingApprovalData
+
+@Styles.Render("~/Content/css/style.css")
+@Styles.Render("~/Content/css/pendingApproval.css")
+@Scripts.Render("~/Scripts/js/common.js")
+
+<script type="text/javascript">
+    $(function () {
+    })
+    function regist() {
+    }
+    function data_approval(level, categoryId, locationId, reportId, period, startDate) {
+        $('#sel_CategoryId').val(categoryId);
+        $('#sel_LocationId').val(locationId);
+        $('#sel_ReportId').val(reportId);
+        $('#sel_Period').val(period);
+        $('#sel_StartDate').val(startDate);
+        $('#sel_Bunrui').val(level);
+
+        $('form').attr('action', '@Url.Content("~/PendingApproval/Approval")');
+        $('form').submit();
+    }
+</script>
+
+<h1 class="page-title">承認待ち件数</h1>
+@using (Html.BeginForm("Edit", "MachineM", new { }, FormMethod.Post, new { }))
+{
+    @Html.AntiForgeryToken()
+    <section id="">
+
+        @Html.Hidden("sel_CategoryId", string.Empty)
+        @Html.Hidden("sel_LocationId", string.Empty)
+        @Html.Hidden("sel_ReportId", string.Empty)
+        @Html.Hidden("sel_Period", string.Empty)
+        @Html.Hidden("sel_StartDate", string.Empty)
+        @Html.Hidden("sel_Bunrui", string.Empty)
+
+        <div class="subtitle">中分類承認</div>
+        @if (Model.MiddleDatas.Count() > 0)
+        {
+            <table id="tbl1" class="header_title">
+                <thead>
+                    <tr class="">
+                        <th class="th-1">データ記録範囲</th>
+                        <th class="th-2">周期</th>
+                        <th class="th-3">大分類</th>
+                        <th class="th-4">中分類</th>
+                        <th class="th-5">帳票名</th>
+                        <th class="th-6">件数</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < Model.MiddleDatas.Count; i++) {
+                        var key = String.Format("list[{0}].", i);
+                        var item = Model.MiddleDatas[i];
+                    <tr>
+                        <td class="td-1">@item.PERIODSTARTDATE　～　@item.PERIODENDDATE</td>
+                        <td class="td-2">@item.PERIODWORD</td>
+                        <td class="td-3">@item.CATEGORYNAME</td>
+                        <td class="td-4">@item.LOCATIONNAME</td>
+                        <td class="td-5">@item.REPORTNAME</td>
+                        @if ("2".Equals(item.MODE))
+                        {
+                            <td class="td-6 number"><a href="javascript:data_approval('1', '@item.CATEGORYID', '@item.LOCATIONID', '@item.REPORTID', '@item.PERIOD', '@item.PERIODSTART');" class="unker">承認依頼未完了</a></td>
+                        }
+                        else if ("1".Equals(item.MODE))
+                        {
+                            <td class="td-6 number"><a href="javascript:data_approval('1', '@item.CATEGORYID', '@item.LOCATIONID', '@item.REPORTID', '@item.PERIOD', '@item.PERIODSTART')" class="unker">差戻</a></td>
+                        }
+                        else
+                        {
+                            <td class="td-6 number"><a href="javascript:data_approval('1', '@item.CATEGORYID', '@item.LOCATIONID', '@item.REPORTID', '@item.PERIOD', '@item.PERIODSTART');" class="unker">@(item.CNT + "件")</a></td>
+                        }
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        } else
+        {
+            <div id="no-data">
+                <span>承認待ちデータはありません。</span>
+            </div>
+        }
+
+        <div class="subtitle">大分類承認</div>
+        @if (Model.MajorDatas.Count() > 0)
+        {
+            <table id="tbl2" class="header_title">
+                <thead>
+                    <tr class="">
+                        <th class="th-1">データ記録範囲</th>
+                        <th class="th-2">周期</th>
+                        <th class="th-3">大分類</th>
+                        <th class="th-6">件数</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < Model.MajorDatas.Count; i++)
+                    {
+                        var key = String.Format("list[{0}].", i);
+                        var item = Model.MajorDatas[i];
+                        <tr>
+                            <td class="td-1">@item.PERIODSTARTDATE　～　@item.PERIODENDDATE</td>
+                            <td class="td-2">@item.PERIODWORD</td>
+                            <td class="td-3">@item.CATEGORYNAME</td>
+                            @if ("2".Equals(item.MODE))
+                            {
+                                <td class="td-5 number"><a href="javascript:data_approval('2', '@item.CATEGORYID', '', '', '@item.PERIOD', '@item.PERIODSTART');" class="unker">承認依頼未完了</a></td>
+                            }
+                            else if ("1".Equals(item.MODE))
+                            {
+                                <td class="td-5 number"><a href="javascript:data_approval('2', '@item.CATEGORYID', '', '', '@item.PERIOD', '@item.PERIODSTART');" class="unker">差戻</a></td>
+                            } else
+                            {
+                                <td class="td-5 number"><a href="javascript:data_approval('2', '@item.CATEGORYID', '', '', '@item.PERIOD', '@item.PERIODSTART');" class="unker">@(item.CNT + "件")</a></td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+                    } else
+        {
+            <div id="no-data">
+                <span>承認待ちデータはありません。</span>
+            </div>
+        }
+
+        <div class="subtitle">施設承認</div>
+        @if (Model.FacilityDatas.Count() > 0)
+        {
+            <table id="tbl3" class="header_title">
+                <thead>
+                    <tr class="">
+                        <th class="th-1">データ記録範囲</th>
+                        <th class="th-2">周期</th>
+                        <th class="th-6">件数</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < Model.FacilityDatas.Count; i++)
+                    {
+                        var key = String.Format("list[{0}].", i);
+                        var item = Model.FacilityDatas[i];
+                        <tr>
+                            <td class="td-1">@item.PERIODSTARTDATE　～　@item.PERIODENDDATE</td>
+                            <td class="td-2">@item.PERIODWORD</td>
+                            @if ("2".Equals(item.MODE))
+                            {
+                                <td class="td-6 number"><a href="javascript:data_approval('3', '', '', '', '@item.PERIOD', '@item.PERIODSTART');" class="unker">承認完了待ち</a></td>
+                            } else if ("1".Equals(item.MODE))
+                            {
+                                <td class="td-6 number"><a href="javascript:data_approval('3', '', '', '', '@item.PERIOD', '@item.PERIODSTART');" class="unker">差戻</a></td>
+                            } else
+                            {
+                                <td class="td-6 number"><a href="javascript:data_approval('3', '', '', '', '@item.PERIOD', '@item.PERIODSTART');" class="unker">@(item.CNT + "件")</a></td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        } else
+        {
+            <div id="no-data">
+                <span>承認待ちデータはありません。</span>
+            </div>
+        }
+    </section>
+}

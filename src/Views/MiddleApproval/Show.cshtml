@@ -1,0 +1,266 @@
+﻿
+@model HACCPExtender.Models.Bussiness.BMiddleApproval
+@using HACCPExtender.Constants
+
+@Styles.Render("~/Content/css/style.css")
+@Styles.Render("~/Content/css/middleApproval.css")
+@Scripts.Render("~/Scripts/js/common.js")
+
+<script type="text/javascript">
+    $(function () {
+    })
+    function ChangeCategory(val) {
+        $('form').attr('action', '@Url.Content("~/MiddleApproval/ChangeCondition")');
+        $('form').submit();
+    }
+    function ChangeLocation(val) {
+        $('form').attr('action', '@Url.Content("~/MiddleApproval/ChangeCondition")');
+        $('form').submit();
+    }
+    function ChangeReport(val) {
+        $('.period').css('display', 'none');
+
+        var day = $('#PeriodDay').val();
+        if (val == '' || day == '') {
+            $('.result').css('display', 'none');
+        } else {
+            $('form').attr('action', '@Url.Content("~/MiddleApproval/ChangeDetermineConditions")');
+            $('form').submit();
+        }
+    }
+    function ChangePeriodDay(val) {
+        $('.period').css('display', 'none');
+        var report = $('#ReportId').val();
+
+        if (report == '' || val == '') {
+            $('.result').css('display', 'none');
+        } else {
+            if (!isDate(val)) {
+                alert('YYYY-MM-DDの形式で入力してください。');
+                return false;
+            }
+
+            if (val.match(/^\d{4}\/\d{2}\/\d{2}$/)) {
+                var datestr = val.replace(/\//g, '');
+                $('#PeriodYMD').val(datestr);
+            }
+            if (val.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                var datestr = val.replace(/-/g, '');
+                $('#PeriodYMD').val(datestr);
+            }
+
+            $('form').attr('action', '@Url.Content("~/MiddleApproval/ChangeDetermineConditions")');
+            $('form').submit();
+        }
+    }
+    function registApproval() {
+        if (!confirm("承認を実行します。よろしいですか")) {
+            return false;
+        }
+        $('form').attr('action', '@Url.Content("~/MiddleApproval/RegistApproval")');
+        $('form').submit();
+    }
+    function data_detail() {
+        $('form').attr('action', '@Url.Content("~/MiddleApproval/ShowDataDetail")');
+        $('form').submit();
+    }
+    function requestMajor() {
+        if (!confirm("承認依頼を実行します。よろしいですか？")) {
+            return false;
+        }
+        $('form').attr('action', '@Url.Content("~/MiddleApproval/RequestMajorApproval")');
+        $('form').submit();
+    }
+</script>
+
+
+<h1 class="page-title">データ承認（中分類承認）</h1>
+@using (Html.BeginForm("Edit", "MiddleApproval", new { }, FormMethod.Post, new { }))
+{
+    @Html.AntiForgeryToken()
+    <section id="">
+        @Html.ValidationSummary()
+        @{
+            var disp = "none";
+            if (!string.IsNullOrEmpty(ViewBag.registMsg))
+            {
+                disp = "block";
+            }
+        }
+        <div id="message-area" style="display: @disp">
+            <div class="regist-message" style="display: @disp">@Html.Raw(Html.Encode(ViewBag.registMsg).Replace("\n", "<br />"))</div>
+        </div>
+        <div class="category">
+            <ul>
+                <li><span class="midashi">大分類</span></li>
+                <li>@Html.DropDownListFor(model => model.CategoryId, (IEnumerable<SelectListItem>)Model.CategoryDrop, "選択してください", new { @class = "selectType1 input-area1", @onchange = "ChangeCategory(this.value)" })</li>
+            </ul>
+        </div>
+        <div class="category">
+            <ul>
+                <li><span class="midashi">中分類</span></li>
+                <li>@Html.DropDownListFor(model => model.LocationId, (IEnumerable<SelectListItem>)Model.LoactionDrop, "選択してください", new { @class = "selectType1 input-area1", @onchange = "ChangeLocation(this.value)" })</li>
+            </ul>
+        </div>
+        <div class="category subarea">
+            <ul>
+                <li><span class="midashi">帳票　</span></li>
+                <li>@Html.DropDownListFor(model => model.ReportId, (IEnumerable<SelectListItem>)Model.ReportDrop, "選択してください", new { @class = "selectType1 input-area1", @onchange = "ChangeReport(this.value)" })</li>
+            </ul>
+        </div>
+        <dev class="category" id="recorddate-area">
+            <ul>
+                <li><input type="date" id="PeriodDay" name="PeriodDay" value="@Model.PeriodDay" class="hiduke" Onchange="ChangePeriodDay(this.value)" min="1900-01-01" max="2100-12-31"></li>
+                @if (!string.IsNullOrEmpty(Model.PeriodStartDate) || !string.IsNullOrEmpty(Model.PeriodEndDate))
+                {
+                    <li class="period">データ記録範囲： @Model.PeriodStartDate ～ @Model.PeriodEndDate</li>
+                }
+            </ul>
+            @Html.Hidden("Period", Model.Period)
+            @Html.Hidden("PeriodYMD", Model.PeriodYMD)
+            @Html.Hidden("PeriodStart", Model.PeriodStart)
+            @Html.Hidden("PeriodEnd", Model.PeriodEnd)
+            @Html.Hidden("MajorUpdDate", Model.MajorUpdDate)
+        </dev>
+
+        <div class="result">
+            @if (Model.MiddleDatas != null && Model.MiddleDatas.Count() > 0)
+            {
+                <section id="middle-btnarea">
+                    @if (Model.ApprobalBtn)
+                    {
+                        <button type="button" name="regist" class="btn-register majorSnn" onClick="registApproval()">承認</button>
+                    }
+                    else
+                    {
+                        <button type="button" name="regist" class="btn-register majorSnn" disabled>承認</button>
+                    }
+                </section>
+                <table id="tbl1" class="header_title">
+                    <thead>
+                        <tr class="datarow">
+                            <th class="th-1">選択</th>
+                            <th class="th-2">ステータス</th>
+                            <th class="th-3">データ記録</th>
+                            <th class="th-4">記録作業者</th>
+                            <th class="th-5">承認コメント</th>
+                            <th class="th-6">データ詳細</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.MiddleDatas.Count; i++)
+                        {
+                            var key = String.Format("list[{0}].", i);
+                            var item = Model.MiddleDatas[i];
+
+                            <tr class="datarow">
+                                @Html.Hidden(key + "APPROVALID", item.APPROVALID)
+                                @Html.Hidden(key + "UPDDATE", item.UPDDATE)
+                                @Html.Hidden(key + "STATUS", item.STATUS)
+                                @Html.Hidden(key + "DATAYMD", item.DATAYMD)
+                                @Html.Hidden(key + "WORKERNAME", item.WORKERNAME)
+                                <td class="td-1 chk">
+                                    @if (Const.ApprovalStatus.APPROVAL.Equals(item.STATUS))
+                                    {
+                                        @Html.CheckBox(key + "DataChk", item.DataChk, new { @disabled = "disabled" })
+                                    }
+                                    else
+                                    {
+                                        @Html.CheckBox(key + "DataChk", item.DataChk)
+                                    }
+                                </td>
+                                @if (Const.ApprovalStatus.PENDING.Equals(item.STATUS))
+                                {
+                                    <td class="td-2">承認待ち</td>
+                                }
+                                else if (Const.ApprovalStatus.APPROVAL.Equals(item.STATUS))
+                                {
+                                    <td class="td-2">承認済</td>
+                                }
+                                else
+                                {
+                                    <td class="td-2">差戻</td>
+                                }
+                                <td class="td-3">@item.DATAYMD</td>
+                                <td class="td-4">@item.WORKERNAME</td>
+                                @if (Const.ApprovalStatus.APPROVAL.Equals(item.STATUS))
+                                {
+                                    <td class="td-5 inp-txt">@Html.TextBox(key + "MIDDLESNNCOMMENT", item.MIDDLESNNCOMMENT, new { @class = "table-txt", @disabled = "disabled" })</td>
+                                    @Html.Hidden(key + "MIDDLESNNCOMMENT", item.MIDDLESNNCOMMENT)
+                                }
+                                else
+                                {
+                                    <td class="td-5 inp-txt">@Html.TextBox(key + "MIDDLESNNCOMMENT", item.MIDDLESNNCOMMENT, new { @class = "table-txt" })</td>
+                                }
+                                <td class="td-6 chk">
+                                    <a href="javascript:data_detail()" class="detail">データ詳細</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <div class="category majorapp-area">
+                    <ul>
+                        @if (Model.RequestBtn)
+                        {
+                            <li class="bottom">@Html.TextBox("RequestComment", Model.RequestComment, new { @class = "snnRequest", placeholder = "大分類承認依頼コメント" })</li>
+                            <li><button type="button" name="regist" class="btn-request" onclick="requestMajor()">大分類承認依頼</button></li>
+                        }
+                        else
+                        {
+                            <li class="bottom">@Html.TextBox("RequestComment", Model.RequestComment, new { @class = "snnRequest", placeholder = "大分類承認依頼コメント", disabled = "disabled" })</li>
+                            <li><button type="button" name="regist" class="btn-request" disabled>大分類承認依頼</button></li>
+                        }
+                    </ul>
+                </div>
+                <div class="rireki-title">承認履歴（大分類承認・施設承認）</div>
+                <table id="tbl2">
+                    <thead>
+                        <tr>
+                            <th class="th-1">承認ノード</th>
+                            <th class="th-2">処理日時</th>
+                            <th class="th-3">コメント</th>
+                            <th class="th-4">ステータス</th>
+                            <th class="th-5">承認者</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.Historys.Count; i++)
+                        {
+                            var key = String.Format("list[{0}].", i);
+                            var item = Model.Historys[i];
+                            <tr>
+                                <td class="td-1">@item.APPROVALNODE</td>
+                                <td class="td-2">@item.APPROVALDATE</td>
+                                <td class="td-3">@item.APPROVALCOMMENT</td>
+                                @if (Const.ApprovalStatus.PENDING.Equals(item.STATUS))
+                                {
+                                    <td class="td-4">承認待ち</td>
+                                }
+                                else if (Const.ApprovalStatus.APPROVAL.Equals(item.STATUS))
+                                {
+                                    <td class="td-4">承認済</td>
+                                }
+                                else
+                                {
+                                    <td class="td-4">差戻</td>
+                                }
+                                <td class="td-5">@item.APPROVALUSERNAME</td>
+                            </tr>
+                        }
+                        @if (Model.Historys.Count() == 0)
+                        {
+                            <tr>
+                                <td class="td-1" colspan="5">データがありません</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="nodata">@ViewBag.noDateMsg</div>
+            }
+        </div>
+    </section>
+}

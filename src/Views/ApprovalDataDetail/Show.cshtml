@@ -1,0 +1,260 @@
+﻿@model HACCPExtender.Models.Bussiness.BApprovalDataDetail
+
+@Styles.Render("~/Content/css/style.css")
+@Styles.Render("~/Content/css/appdata_detail.css")
+@Scripts.Render("~/Scripts/js/common.js")
+
+<script type="text/javascript">
+    $(function () {
+        var snn = $('#nodeId').val();
+        if (snn == '3') {
+            var location = $('#LocationId').val();
+            if (location != '') {
+                $('#report_select').css('display', 'block');
+            }
+        }
+    })
+    function ChangeLocation(val) {
+        $('#qa-area').css('display', 'none');
+
+        if (val != '') {
+            $('form').attr('action', '@Url.Content("~/ApprovalDataDetail/LocationChange")');
+            $('form').submit();
+        } else {
+            $('#ReportId').val('');
+            $('#report_select').css('display', 'none');
+        }
+    }
+    function ChangeReport(val) {
+        $('#qa-area').css('display', 'none');
+
+        if (val != '') {
+            $('form').attr('action', '@Url.Content("~/ApprovalDataDetail/ReportChange")');
+            $('form').submit();
+        }
+    }
+    function turnback() {
+        $('form').attr('action', '@Url.Content("~/ApprovalDataDetail/BackShow")');
+        $('form').submit();
+    }
+</script>
+
+<h1 class="page-title">記録データ</h1>
+@using (Html.BeginForm("Edit", "ApprovalDataDetail", new { }, FormMethod.Post, new { }))
+{
+    @Html.AntiForgeryToken()
+<section id="">
+    @Html.ValidationSummary()
+
+    @Html.Hidden("nodeId", Model.nodeId)
+    @Html.Hidden("CategoryId", Model.CategoryId)
+
+    @if ("1".Equals(Model.nodeId) || "2".Equals(Model.nodeId))
+    {
+        <table id="tbl1" class="header_title">
+            <thead>
+                <tr class="">
+                    <th class="th-1">大分類名</th>
+                    <th class="th-2">中分類名</th>
+                    <th class="th-3">帳票名</th>
+                    @if (Model.ReportFileCount == 1)
+                    {
+                        <th class="th-4">帳票ファイル</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="">
+                    <td class="td-1">@Model.CategoryName</td>
+                    <td class="td-2">@Model.LocationName</td>
+                    <td class="td-3">@Model.ReportName</td>
+                    @if (Model.ReportFileCount == 1)
+                    {
+                        <td class="td-4">
+                            <a href="~/@Model.ReportFilePath" target="_blank">@Model.ReportFileName</a>
+                        </td>
+                    }
+                </tr>
+            </tbody>
+        </table>
+
+        @Html.Hidden("LocationId", Model.LocationId)
+        @Html.Hidden("ReportId", Model.ReportId)
+        @Html.Hidden("Period", Model.Period)
+        @Html.Hidden("PeriodStart", Model.PeriodStart)
+
+        if (Model.ApprovalDataList != null && Model.ApprovalDataList.Count() > 0)
+        {
+            for (var k = 0; k < Model.ApprovalDataList.Count; k++)
+            {
+                var item = Model.ApprovalDataList[k];
+                var header = item[0].HeaderDic;
+
+                <table id="tbl2" class="header_title">
+                    <thead>
+                        <tr>
+                            <th class="th-1">データ記録日時</th>
+                            <th class="th-2">作業者</th>
+                            @foreach (KeyValuePair<int, string> kvp in header)
+                            {
+                                <th class="th-3">@kvp.Value</th>
+                            }
+                            @if (Model.ReportFileCount > 1)
+                            {
+                                <th class="th-3">帳票ファイル</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < item.Count; i++)
+                        {
+                            var result = item[i];
+                            var answer = result.AnserDic;
+                            var attachFlg = result.AttachDic;
+
+                            <tr>
+                                <td class="td-1">@result.DataYMD</td>
+                                <td class="td-2">@result.WorkerName</td>
+                                @foreach (KeyValuePair<int, string> kvp in answer)
+                                {
+                                    if (attachFlg[kvp.Key])
+                                    {
+                                        <td class="td-3 ">
+                                            <a href="~/@kvp.Value" target="_blank">画像</a>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td class="td-3 ">@kvp.Value</td>
+                                    }
+                                }
+                                @if (Model.ReportFileCount > 1)
+                                {
+                                    <td class="td-3 ">
+                                        <a href="~/@result.REPORTFILEPASS" target="_blank">@result.REPORTFILENAME</a>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        }
+    }
+    else
+    {
+        @Html.Hidden("Period", Model.Period)
+        @Html.Hidden("PeriodStart", Model.PeriodStart)
+
+        <div class="category">
+            <ul>
+                <li><span class="midashi">中分類</span></li>
+                <li>
+                    @Html.DropDownList("LocationId", (IEnumerable<SelectListItem>)ViewBag.locationOptions, "選択してください", new { @class = "selectType1 input-area1", @onchange = "ChangeLocation(this.value)" })
+                </li>
+            </ul>
+        </div>
+        <div id="report_select" class="category" style="display: none">
+            <ul>
+                <li><span class="midashi">帳票　</span></li>
+                <li>
+                    @Html.DropDownList("ReportId", (IEnumerable<SelectListItem>)ViewBag.ReportOptions, "選択してください", new { @class = "selectType1 input-area1", @onchange = "ChangeReport(this.value)" })
+                </li>
+            </ul>
+        </div>
+
+        <div id="qa-area">
+            @if (Model.ApprovalDataList != null && Model.ApprovalDataList.Count() > 0)
+            {
+                <table id="tbl1" class="header_title">
+                    <thead>
+                        <tr class="">
+                            <th class="th-1">大分類名</th>
+                            <th class="th-2">中分類名</th>
+                            <th class="th-3">帳票名</th>
+                            @if (Model.ReportFileCount == 1)
+                            {
+                                <th class="th-4">帳票ファイル</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="">
+                            <td class="td-1">@Model.CategoryName</td>
+                            <td class="td-2">@Model.LocationName</td>
+                            <td class="td-3">@Model.ReportName</td>
+                            @if (Model.ReportFileCount == 1)
+                            {
+                                <td class="td-4">
+                                    <a href="~/@Model.ReportFilePath" target="_blank">@Model.ReportFileName</a>
+                                </td>
+                            }
+                        </tr>
+                    </tbody>
+                </table>
+
+                for (var k = 0; k < Model.ApprovalDataList.Count; k++)
+                {
+                    var item = Model.ApprovalDataList[k];
+                    var header = item[0].HeaderDic;
+
+                    <table id="tbl2" class="header_title">
+                        <thead>
+                            <tr>
+                                <th class="th-1">データ記録日時</th>
+                                <th class="th-2">作業者</th>
+                                @foreach (KeyValuePair<int, string> kvp in header)
+                                {
+                                    <th class="th-3">@kvp.Value</th>
+                                }
+                                @if (Model.ReportFileCount > 1)
+                                {
+                                    <th class="th-3">帳票ファイル</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (var i = 0; i < item.Count; i++)
+                            {
+                                var result = item[i];
+                                var answer = result.AnserDic;
+                                var attachFlg = result.AttachDic;
+
+                                <tr>
+                                    <td class="td-1">@result.DataYMD</td>
+                                    <td class="td-2">@result.WorkerName</td>
+                                    @foreach (KeyValuePair<int, string> kvp in answer)
+                                    {
+                                        if (attachFlg[kvp.Key])
+                                        {
+                                            <td class="td-3 ">
+                                                <a href="~/@kvp.Value" target="_blank">画像</a>
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td class="td-3 ">@kvp.Value</td>
+                                        }
+                                    }
+                                    @if (Model.ReportFileCount > 1)
+                                    {
+                                        <td class="td-3 ">
+                                            <a href="~/@result.REPORTFILEPASS" target="_blank">@result.REPORTFILENAME</a>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            }
+        </div>
+    }
+</section>
+    <section id="btnarea">
+        <button type="button" name="back" class="btn-skip" onclick="turnback()">戻る</button>
+    </section>
+
+}
+
+

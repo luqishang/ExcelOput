@@ -1,0 +1,176 @@
+﻿<!DOCTYPE html>
+<script>
+    //メニューの開閉
+    function openNav() {
+        if (document.getElementById("sidebar").style.visibility == "visible") {
+            document.getElementById("sidebar").style.width = "0px";
+            document.getElementById("sidebar").style.visibility = "hidden";
+            document.getElementById("main-content").style.marginLeft = "0px";
+        } else {
+            document.getElementById("sidebar").style.width = "150px";
+            document.getElementById("sidebar").style.visibility = "visible";
+            document.getElementById("main-content").style.marginLeft = "150px";
+        }
+    }
+</script>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    @*  device-widthだけでいい→ <meta name="viewport" content="width=device-width, initial-scale=1.0">*@
+    <meta name="viewport" content="width=device-width">
+    <title>HACCP Extender</title>
+    @using HACCPExtender.Constants
+    @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/Scripts/js/jquery-1.10.2.min.js")
+    @Styles.Render("~/Content/css/style.css")
+    @Styles.Render("~/Content/Site.css")
+    @Styles.Render("~/Content/bootstrap.css")
+</head>
+<body>
+    <section id="container">
+        <header class="header">
+            <ul class="list-inline">
+
+                @{
+
+
+                    if (Const.ManagerLoginMode.FIRST_LOGIN.Equals(Session["DISPMODE"]))
+                    {
+                        <li class="topLogo">
+                            <img src="@Url.Content("~/Content/images/haccpex.png")" onclick="openNav()"><br />
+                                                                                                        <span onclick="openNav()">▽Menu▽</span>
+                        </li>
+                        <li>@Session["SHOPNM"]</li>
+                    }
+                    else
+                    {
+                        @*<li class="topLogo list-inline-item"><a href="~/Top/Show"><img src="@Url.Content("~/Content/images/haccpex.png")"></a></li>*@
+                        <li class="topLogo list-inline-item">
+                            <img src="@Url.Content("~/Content/images/haccpex.png")" onclick="openNav()"><br />
+                            <h2><span onclick="openNav()">▽Menu▽</span></h2>
+                        </li>
+                        <li class="list-inline-item">@Session["SHOPNM"]</li>
+                        if (Const.ManagerLoginMode.LOGIN_ALREADY.Equals(Session["DISPMODE"]))
+                        {
+                            <li class="list-inline-item">
+                                管理者: <span class="bold">@Session["LOGINMNGNM"]</span>
+                            </li>
+                            <li class="list-inline-item">
+                                <a href="~/Manager/Signout">管理者ログアウト</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="list-inline-item">
+                                ログインしてください
+                            </li>
+                            <li class="list-inline-item">
+                                <a href="~/Manager/Show?menu=1">管理者ログイン</a>
+                            </li>
+                        }
+                    }
+
+                }
+            </ul>
+        </header>
+        @*    <aside id="aside1">*@
+        <div id="sidebar" class="navbar-collapse">
+            <ul class="sidebar-menu" id="nav-accordion">
+                @{
+                    if (Context.GetOverriddenBrowser().IsMobileDevice)
+                    {
+
+                    }
+                    if (Const.ManagerLoginMode.FIRST_LOGIN.Equals(Session["DISPMODE"]))
+                    {
+                        if (!string.IsNullOrEmpty(ViewBag.screenExplanation))
+                        {
+                            <a href="@ViewBag.screenExplanation" target="_blank" rel="noopener"><li class="sidemenu-sub link-button">画面説明</li></a>
+                        }
+                        else
+                        {
+                            <a href="#" class="disabled"><li class="sidemenu-sub link-button disabled-btn">画面説明</li></a>
+                        }
+                    }
+                    else
+                    {
+                        bool eiseiKanri = false;
+
+                        foreach (string name in Enum.GetNames(typeof(Const.GamenName)))
+                        {
+                            //メンバの名前を表示する
+                            if (Request.RawUrl.IndexOf(name) > 0)
+                            {
+                                eiseiKanri = true;
+                            }
+                        }
+
+                        // 温度管理の場合
+                        if (eiseiKanri)
+                        {
+                            <a href="~/Top/Show"><li class="sidemenu-main link-button">TOP</li></a>
+                            <li class="sidemenu-mst link-label">温度管理マスタ</li>
+                            <a href="~/MachineM/Show"><li class="sidemenu-ondo link-button rightpos">機器マスタ</li></a>
+                            <a href="~/Supplier/Show"><li class="sidemenu-ondo link-button rightpos">仕入先マスタ</li></a>
+                            <a href="~/Foodstuff/Show"><li class="sidemenu-ondo link-button rightpos">食材マスタ</li></a>
+                            <a href="~/Cuisine/Show"><li class="sidemenu-ondo link-button rightpos">料理マスタ</li></a>
+                            <a href="~/Semifinishedproduct/Show"><li class="sidemenu-ondo link-button rightpos">半製品マスタ</li></a>
+                            <a href="~/Usermst/Show"><li class="sidemenu-ondo link-button rightpos">ユーザーマスタ</li></a>
+
+                            @*<a href=""><li class="sidemenu-ondo link-button rightpos">マスタ設定</li></a>
+                                <a href=""><li class="sidemenu-sub link-button">温度履歴</li></a>*@
+
+                        }
+                        else
+                        {
+
+                            @*<a href="~/ReportProduction"><li class="btn-delete link-button">帳票作成(デバッグ)</li></a>*@
+                            <a href="~/Top/Show"><li class="sidemenu-main link-button">TOP</li></a>
+                            <a href="~/DataHistory/Show"><li class="sidemenu-main link-button">データ履歴</li></a>
+                            <a href="~/PendingApproval/Show"><li class="sidemenu-main link-button">データ承認</li></a>
+                            @*<a href=""><li class="sidemenu-main link-button">帳票アップロード</li></a>*@
+                            <a href="~/ReportDownload/Show"><li class="sidemenu-main link-button">帳票ダウンロード</li></a>
+                            <a href="~/ManualM/Show"><li class="sidemenu-main link-button">手引書</li></a>
+
+                            if (!string.IsNullOrEmpty(ViewBag.screenExplanation))
+                            {
+                                <a href="@ViewBag.screenExplanation" target="_blank" rel="noopener"><li class="sidemenu-sub link-button">画面説明</li></a>
+                            }
+                            else
+                            {
+                                <a href="#" class="disabled"><li class="sidemenu-sub link-button disabled-btn">画面説明</li></a>
+                            }
+                            <a href="~/CategoryM/Show"><li class="sidemenu-mst link-button">大分類マスタ</li></a>
+                            <a href="~/WorkerM/Show"><li class="sidemenu-mst link-button">作業者マスタ</li></a>
+                            <a href="~/LocationM/Show"><li class="sidemenu-mst link-button">中分類マスタ</li></a>
+                            <a href="~/QuestionM/Show"><li class="sidemenu-mst link-button">設問マスタ</li></a>
+                            <a href="~/ReportM/Show"><li class="sidemenu-mst link-button">帳票マスタ</li></a>
+                            <a href="~/ApprovalRoute/Show"><li class="sidemenu-mst link-button">承認マスタ</li></a>
+                            <a href="~/Temperature"><li class="sidemenu-mst link-button">温度管理マスタ</li></a>
+
+                            @*<a href=""><li class="sidemenu-sub link-button">温度履歴</li></a>*@
+
+                        }
+                    }
+                }
+            </ul>
+        </div>
+        @*  </aside>*@
+
+        <section id="main-content">
+            <section class="wrapper site-min-height">
+                <div class="body-content">
+                    <div id="ie-msg" style="display:none">InterNetExplorerはサポートされていません。Microsoft Edgeまたは他のブラウザでご利用くださいますようお願いいたします。</div>
+                    @RenderBody()
+                </div>
+            </section>
+        </section>
+    </section>
+
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>

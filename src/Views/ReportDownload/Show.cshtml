@@ -1,0 +1,126 @@
+﻿
+@model List<HACCPExtender.Models.Bussiness.BReportDownload>
+
+@Styles.Render("~/Content/css/style.css")
+@Styles.Render("~/Content/css/reportdownload.css")
+@Scripts.Render("~/Scripts/js/common.js")
+<script type="text/javascript">
+    $(function () {
+    })
+    function ChangeCategory(val) {
+        $('#report-area').css('display', 'none');
+        $('#download-area').css('display', 'none');
+
+        var category = $('#Category').val();
+        if (category != '') {
+            $('form').attr('action', '@Url.Content("~/ReportDownload/CategoryChange")');
+            $('form').submit();
+        }
+    }
+
+    function download_report() {
+        $("#message-area").css('display', 'none');
+        if (!confirm("ダウンロード処理を実行します。よろしいですか？")) {
+            $('form').off('submit');
+            return false;
+        }
+        $('.orderno').each(function (i) {
+            $(this).val(i);
+        });
+        //$('#downloadButton').prop("disabled", true);
+        $('form').attr('action', '@Url.Content("~/ReportDownload/Download")');
+        $('form').submit();
+    }
+</script>
+
+@{
+    if ("3".Equals(Session["DISPMODE"]))
+    {
+        <h1 id="img-title">初期設定</h1>
+        <img src="/Content/images/area.png" ) id="first-map" />
+    }
+}
+<h1 class="page-title">帳票ダウンロード</h1>
+@using (Html.BeginForm("Edit", "ReportDownload", new { }, FormMethod.Post, new { }))
+{
+    @Html.AntiForgeryToken()
+    <section id="">
+        @Html.ValidationSummary()
+        @{
+            var disp = "none";
+            if (!string.IsNullOrEmpty(ViewBag.registMsg))
+            {
+                disp = "block";
+            }
+        }
+        <div id="message-area" style="display: @disp">
+            <div class="regist-message" style="display: @disp">@ViewBag.registMsg</div>
+        </div>
+
+        <div id="bumon_select" class="category">
+            <ul>
+                <li><span class="midashi">大分類</span></li>
+                <li>
+                    @Html.DropDownList("Category", (IEnumerable<SelectListItem>)ViewBag.categoryOptions, "選択してください", new { @class = "selectType1 input-area1", @onchange = "ChangeCategory(this.value)" })
+                </li>
+            </ul>
+        </div>
+        <div id="report-area">
+            @if (Model.Count() > 0)
+            {
+                <h2 class="category-title">中分類・帳票</h2>
+                <table id="tbl1">
+                    <thead>
+                        <tr class="datarow">
+                            <th class="th-1">番号</th>
+                            <th class="th-2">チェック</th>
+                            <th class="th-4">中分類</th>
+                            <th class="th-6">帳票名</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.Count; i++)
+                        {
+                            var key = String.Format("list[{0}].", i);
+                            var item = Model[i];
+
+                            @Html.Hidden(key + "ReportTemplateId", item.ReportTemplateId)
+                            @Html.Hidden(key + "LocationId", item.LocationId)
+                            @Html.Hidden(key + "LocationName", item.LocationName)
+                            @Html.Hidden(key + "ReportName", item.ReportName)
+                            @Html.Hidden(key + "No", item.No, new { @class = "orderno" })
+                            @Html.Hidden(key + "ReportID", item.ReportId)
+                            <tr class="datarow">
+                                <td class="td-1 number no"></td>
+                                <td class="td-2 align-center">@Html.CheckBox(key + "CheckFlg", item.CheckFlg)</td>
+                                <td class="td-4">@item.LocationName</td>
+                                <td class="td-6">@item.ReportName</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </section>
+
+    <section id="download-area">
+        @if (Model.Count() > 0)
+        {
+            <div id="period">
+                <ul>
+                    <li><span class="period-tittle">ダウンロード期間</span></li>
+                    <li><input type="date" name="startDate" value="@ViewBag.startDate" class="hiduke" min="1900-01-01" max="2100-12-31"/></li>
+                    <li>～</li>
+                    <li><input type="date" name="endDate" value="@ViewBag.endDate" class="hiduke" min="1900-01-01" max="2100-12-31"/></li>
+                    <li><button type="button" name="download" id="downloadButton" class="btn-register download-btn" onclick="download_report()">ダウンロード</button></li>
+                </ul>
+            </div>
+
+        } else
+        {
+            <div class="nodata">@ViewBag.noReport</div>
+        }
+    </section>
+
+}
+

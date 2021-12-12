@@ -1,0 +1,64 @@
+﻿
+@Styles.Render("~/Content/css/style.css")
+@Styles.Render("~/Content/css/managerlogin.css")
+@Scripts.Render("~/Scripts/js/common.js")
+<script type="text/javascript">
+    function reportID_01() {
+        $('form').attr('action', '@Url.Content("~/ReportProduction/DownloadR_01")');
+        $('form').submit();
+    }
+
+    function reportID_02() {
+        $('form').attr('action', '@Url.Content("~/ReportProduction/DownloadR_02")');
+        $('form').submit();
+    }
+
+    function reportID_03() {
+        $('form').attr('action', '@Url.Content("~/ReportProduction/DownloadR_03")');
+        $('form').submit();
+    }
+    function reportID_04() {
+        $('form').attr('action', '@Url.Content("~/ReportProduction/DownloadR_04")');
+        $('form').submit();
+    }
+    function reportID_05() {
+        $('form').attr('action', '@Url.Content("~/ReportProduction/DownloadR_05")');
+        $('form').submit();
+    }
+</script>
+
+<h1 class="page-title">帳票出力</h1>
+@using (Html.BeginForm("kick", "Extender", new { }, FormMethod.Post, new { }))
+{
+    @Html.AntiForgeryToken()
+<section id="">
+    @Html.ValidationSummary()
+    <div id="category">
+        <ul>
+            <li>
+                <button type="button" name="btnReport1" value="regist" class="btn-register" style="width:300px" onclick="reportID_01()">帳票パータン①</button>
+            </li>
+        </ul>
+        <ul>
+            <li>
+                <button type="button" name="btnReprot2" value="regist" class="btn-register" style="width:300px" onclick="reportID_02()">帳票パータン②</button>
+            </li>
+        </ul>
+        <ul>
+            <li>
+                <button type="button" name="btnReprot3" value="regist" class="btn-register" style="width:300px" onclick="reportID_03()">帳票パータン③</button>
+            </li>
+        </ul>
+        <ul>
+            <li>
+                <button type="button" name="btnReprot4" value="regist" class="btn-register" style="width:300px" onclick="reportID_04()">帳票パータン④</button>
+            </li>
+        </ul>
+        <ul>
+            <li>
+                <button type="button" name="btnReprot5" value="regist" class="btn-register" style="width:300px" onclick="reportID_05()">帳票パータン⑤</button>
+            </li>
+        </ul>
+    </div>
+</section>
+}

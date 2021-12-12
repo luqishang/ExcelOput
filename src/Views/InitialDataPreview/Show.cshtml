@@ -1,0 +1,167 @@
+﻿@model HACCPExtender.Models.Bussiness.BInitialData
+
+@Styles.Render("~/Content/css/style.css")
+@Styles.Render("~/Content/css/initialData.css")
+@Scripts.Render("~/Scripts/js/common.js")
+
+<script type="text/javascript">
+    $(function () {
+    })
+    function regist() {
+        if (!confirm("データ登録します。よろしいですか？")) {
+            $('form').off('submit');
+            return false;
+        }
+
+        $('form').attr('action', '@Url.Content("~/InitialDataPreview/Edit")');
+        $('form').submit();
+    }
+    function dataUpdate() {
+        if (!confirm("データを個別に登録していきます。\nよろしいですか？")) {
+            $('form').off('submit');
+            return false;
+        }
+
+        $('form').attr('action', '@Url.Content("~/InitialDataPreview/IndividualEdit")');
+        $('form').submit();
+    }
+    function backGyosh() {
+        $('form').attr('action', '@Url.Content("~/InitialDataPreview/BackIndustry")');
+        $('form').submit();
+    }
+</script>
+
+<h1 id="img-title">初期設定</h1>
+<img src="@Url.Content("~/Content/images/initialData.png")" id="first-map" />
+@using (Html.BeginForm("Edit", "InitialDataPreview", new { }, FormMethod.Post, new { }))
+{
+    @Html.AntiForgeryToken()
+    <section id="">
+        @Html.ValidationSummary()
+        <section class="description">
+                マスタデータを登録すると、下記のデータになります。<br>
+                データの変更がない場合、初期設定は作業者マスタの設定で終了です。<br>
+                下記データから変更する場合は「データを個別設定する」ボタンを押下してください。<br>
+                後からでもマスタデータの変更は可能です。
+        </section>
+        <section id="btnarea_top">
+            <button type="button" name="skip-btn" class="btn-register skipbtn" onclick="regist()">下記データを設定する</button>
+            <button type="button" name="regist-btn" class="btn-manager" onclick="dataUpdate()">データを個別設定する</button>
+            <button type="button" name="return-btn" class="btn-csvout skipbtn" onclick="backGyosh()">業種設定に戻る</button>
+        </section>
+
+        <div class="subtitle">大分類マスタ</div>
+        <table id="tbl1" class="header_title">
+            <thead>
+                <tr class="">
+                    <th class="th-1">No</th>
+                    <th class="th-2">大分類ID</th>
+                    <th class="th-3">大分類名</th>
+                    <th class="th-4">大分類名（英語表記）</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = 0; i < Model.CategoryMDatas.Count; i++)
+                {
+                    var key = String.Format("list[{0}].", i);
+                    var item = Model.CategoryMDatas[i];
+                    <tr class="">
+                        <td class="td-2 number">@(i + 1)</td>
+                        <td class="td-2">@item.CATEGORYID</td>
+                        <td class="td-3 ">@item.CATEGORYNAME</td>
+                        <td class="td-4 ">@item.CATEGORYNAMEENG</td>
+                    </tr>
+                }
+                @if (Model.CategoryMDatas.Count == 0)
+                {
+                    <tr>
+                        <td colspan="4">データがありません。</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="subtitle">中分類マスタ</div>
+        <table id="tbl2" class="header_title">
+            <thead>
+                <tr class="datarow">
+                    <th class="th-1">No</th>
+                    <th class="th-2">中分類ID</th>
+                    <th class="th-3">中分類名</th>
+                    <th class="th-4">中分類名（英語表記）</th>
+                    <th class="th-5">管理者限定</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = 0; i < Model.LocationMDatas.Count; i++)
+                {
+                    var key = String.Format("list[{0}].", i);
+                    var item = Model.LocationMDatas[i];
+                    <tr class="datarow">
+                        <td class="td-1 number">@(i + 1)</td>
+                        <td class="td-2">@item.LOCATIONID</td>
+                        <td class="td-3 ">@item.LOCATIONNAME</td>
+                        <td class="td-4 ">@item.LOCATIONNAMEENG</td>
+                        @if ("1".Equals(item.MANAGERKBN))
+                        {
+                            <td class="td-1 chk">✔</td>
+                        }
+                        else
+                        {
+                            <td class="td-1 chk"></td>
+                        }
+                    </tr>
+                }
+                @if (Model.LocationMDatas.Count == 0)
+                {
+                    <tr>
+                        <td colspan="5">データがありません。</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="subtitle">設問マスタ</div>
+        <table id="tbl3" class="header_title">
+            <thead>
+                <tr class="">
+                    <th class="th-1">No</th>
+                    <th class="th-6">帳票名</th>
+                    <th class="th-2">大分類</th>
+                    <th class="th-3">中分類</th>
+                    <th class="th-4">設問ID</th>
+                    <th class="th-5">回答種類</th>
+                    <th class="th-7">表示方法</th>
+                    <th class="th-8">正常結果条件</th>
+                    <th class="th-9">基準値1</th>
+                    <th class="th-10">基準値2</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = 0; i < Model.QuestionMDatas.Count; i++)
+                {
+                    var key = String.Format("list[{0}].", i);
+                    var item = Model.QuestionMDatas[i];
+                    <tr class="">
+                        <td class="td-1 number">@(i + 1)</td>
+                        <td class="td-2">@item.REPORTNAME</td>
+                        <td class="td-2">@item.CATEGORYNAME</td>
+                        <td class="td-3">@item.LOCATIONNAME</td>
+                        <td class="td-5">@item.QUESTIONID</td>
+                        <td class="td-5">@item.QUESTION</td>
+                        <td class="td-7">@item.ANSWERTYPENAME</td>
+                        <td class="td-8">@item.NORMALCONDITION_NAME</td>
+                        <td class="td-9">@item.NORMALCONDITION1</td>
+                        <td class="td-10">@item.NORMALCONDITION2</td>
+                    </tr>
+                }
+                @if (Model.QuestionMDatas.Count == 0)
+                {
+                    <tr>
+                        <td colspan="10">データがありません。</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+}

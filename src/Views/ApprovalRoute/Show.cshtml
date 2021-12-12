@@ -1,0 +1,229 @@
+﻿@model List<HACCPExtender.Models.Bussiness.BApprovalRoute>
+
+@Styles.Render("~/Content/css/style.css")
+@Styles.Render("~/Content/css/approvalRoute.css")
+@Scripts.Render("~/Scripts/js/common.js")
+
+<script type="text/javascript">
+    $(function () {
+        $('#bumon_select').css('display', 'none');
+        $('#middleSnn').css('display', 'none');
+        $('#majorSnn').css('display', 'none');
+        $('#facilitySnn').css('display', 'none');
+
+        var snn = $('#Snncategory').val();
+        if (snn == '1') {
+            $('#bumon_select').css('display', 'block');
+            var category = $('#Category').val();
+            if (category != '') {
+                $('#middleSnn').css('display', 'block');
+            }
+        } else if (snn == '2') {
+            $('#majorSnn').css('display', 'block');
+        } else if (snn == '3') {
+            $('#facilitySnn').css('display', 'block');
+        }
+    })
+
+    function ChangeSnnCategory(val) {
+        $('#bumon_select').css('display', 'none');
+        $('#middleSnn').css('display', 'none');
+        $('#majorSnn').css('display', 'none');
+        $('#facilitySnn').css('display', 'none');
+
+        var snn = $('#Snncategory').val();
+        if (snn != '') {
+            $('form').attr('action', '@Url.Content("~/ApprovalRoute/SnnCategoryChange")');
+            $('form').submit();
+        } else {
+            $('#middleSnn').val('');
+            $('#middleSnn').prop("disabled", true);
+        }
+    }
+
+    function ChangeCategory(val) {
+        $('#middleSnn').css('display', 'none');
+        $('#majorSnn').css('display', 'none');
+        $('#facilitySnn').css('display', 'none');
+
+        var snn = $('#Category').val();
+        if (snn != '') {
+            $('form').attr('action', '@Url.Content("~/ApprovalRoute/CategoryChange")');
+            $('form').submit();
+        } else {
+            $('#middleSnn').val('');
+            $('#middleSnn').prop("disabled", true);
+        }
+    }
+
+    function regist(mode) {
+
+        if (mode == '3') {
+            $('#sel_CategoryId').val($('input[name="list[0].CategoryId"]').val());
+            $('#sel_LocationId').val($('input[name="list[0].LocationId"]').val());
+        } else {
+            if ($('tr[flag="1"]').length > 0) {
+                $('#sel_CategoryId').val($('tr[flag="1"]').children('input[name$=CategoryId]').val());
+                $('#sel_LocationId').val($('tr[flag="1"]').children('input[name$=LocationId]').val());
+            } else {
+                alert('承認者選択を行う行を選択してください。');
+                return false;
+            }
+        }
+
+        $('#sel_ApprovalNodeId').val(mode);
+
+        $('form').attr('action', '@Url.Content("~/ApprovalRoute/Approvaler")');
+        $('form').submit();
+    }
+</script>
+
+<h1 class="page-title">承認マスタ</h1>
+@using (Html.BeginForm("Edit", "ApprovalRoute", new { }, FormMethod.Post, new { }))
+{
+    @Html.AntiForgeryToken()
+    <section id="">
+        @Html.ValidationSummary()
+        <div class="category">
+            <ul>
+                <li><span class="midashi">承認分類</span></li>
+                <li>
+                    @Html.DropDownList("Snncategory", (IEnumerable<SelectListItem>)ViewBag.SnnOptions, "選択してください", new { @class = "selectType1 input-area1", @onchange = "ChangeSnnCategory(this.value)" })
+                </li>
+            </ul>
+        </div>
+
+        <div id="bumon_select" class="category" style="display: none">
+            <ul>
+                <li><span class="midashi">&nbsp;&nbsp;&nbsp;大分類</span></li>
+                <li>
+                    @Html.DropDownList("Category", (IEnumerable<SelectListItem>)ViewBag.categoryOptions, "選択してください", new { @class = "selectType1 input-area1", @onchange = "ChangeCategory(this.value)" })
+                </li>
+            </ul>
+        </div>
+        @Html.Hidden("sel_CategoryId", string.Empty)
+        @Html.Hidden("sel_LocationId", string.Empty)
+        @Html.Hidden("sel_ApprovalNodeId", string.Empty)
+
+        <div id="middleSnn" style="display:none">
+            @if (ViewBag.mode == "middle")
+            {
+                <table id="tbl1" class="header_title">
+                    <thead>
+                        <tr class="datarow">
+                            <th class="th-2">No</th>
+                            <th class="th-3">中分類名</th>
+                            <th class="th-4">承認者名</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.Count; i++)
+                        {
+                            var key = String.Format("list[{0}].", i);
+                            var item = Model[i];
+
+                            <tr class="datarow">
+                                @Html.Hidden(key + "CategoryId", item.CategoryId)
+                                @Html.Hidden(key + "LocationId", item.LocationId)
+                                <td class="td-2 number no"></td>
+                                <td class="td-3">@item.LocationName</td>
+                                <td class="td-4">@item.ApprovalManagerName</td>
+                            </tr>
+                        }
+                        @if (Model.Count == 0)
+                        {
+                            <tr class="datarow">
+                                <td class="td-2 " colspan=3>データが登録されていません</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <section id="btnarea">
+                    <button type="button" name="regist-btn" class="btn-register" onclick="regist('1')" @ViewBag.editMode>承認者選択</button>
+                </section>
+
+            }
+        </div>
+
+        <div id="majorSnn" style="display:none">
+            @if (ViewBag.mode == "major")
+            {
+                <table id="tbl2" class="header_title">
+                    <thead>
+                        <tr class="datarow">
+                            <th class="th-2">No</th>
+                            <th class="th-3">大分類名</th>
+                            <th class="th-4">承認者名</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.Count; i++)
+                        {
+                            var key = String.Format("list[{0}].", i);
+                            var item = Model[i];
+
+                            <tr class="datarow">
+                                @Html.Hidden(key + "CategoryId", item.CategoryId)
+                                @Html.Hidden(key + "LocationId", item.LocationId)
+                                <td class="td-2 number no"></td>
+                                <td class="td-3">@item.CategoryName</td>
+                                <td class="td-4">@item.ApprovalManagerName</td>
+                            </tr>
+                        }
+                        @if (Model.Count == 0)
+                        {
+                            <tr class="datarow">
+                                <td class="td-2 " colspan=3>データが登録されていません</td>
+                            </tr>
+                        }
+
+                    </tbody>
+                </table>
+                <section id="btnarea">
+                    <button type="button" name="regist-btn" class="btn-register" onclick="regist('2')" @ViewBag.editMode>承認者選択</button>
+                </section>
+            }
+        </div>
+
+        <div id="facilitySnn" style="display:none">
+            @if (ViewBag.mode == "facility")
+            {
+                <table id="tbl3" class="header_title">
+                    <thead>
+                        <tr class="datarow">
+                            <th class="th-2">No</th>
+                            <th class="th-4">承認者名</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @Html.Hidden("list[0].CategoryId", "00")
+                        @Html.Hidden("list[0].LocationId", "00")
+                        @for (var i = 0; i < Model.Count; i++)
+                        {
+                            var key = String.Format("list[{0}].", i);
+                            var item = Model[i];
+
+                            <tr class="datarow">
+                                @Html.Hidden(key + "CategoryId", item.CategoryId)
+                                @Html.Hidden(key + "LocationId", item.LocationId)
+                                <td class="td-2 number no"></td>
+                                <td class="td-4">@item.ApprovalManagerName</td>
+                            </tr>
+                        }
+                        @if (Model.Count == 0)
+                        {
+                            <tr class="datarow">
+                                <td class="td-2 " colspan=3>データが登録されていません</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <section id="btnarea">
+                    <button type="button" name="regist-btn" class="btn-register" onclick="regist('3')" @ViewBag.editMode>承認者選択</button>
+                </section>
+            }
+        </div>
+
+
+    </section>
+}
